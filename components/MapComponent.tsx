@@ -9,12 +9,21 @@ interface MapComponentProps {
 
 export const MapComponent: React.FC<MapComponentProps> = ({ onMapLoad, isLoaded }) => {
   const mapRef = useRef<HTMLDivElement>(null);
+  const hasLoaded = useRef(false);
 
   useEffect(() => {
-    if (mapRef.current && !isLoaded) {
+    if (mapRef.current && !hasLoaded.current && !isLoaded) {
+      hasLoaded.current = true;
       onMapLoad(mapRef.current);
     }
   }, [onMapLoad, isLoaded]);
+
+  // Reset hasLoaded if component re-mounts
+  useEffect(() => {
+    return () => {
+      hasLoaded.current = false;
+    };
+  }, []);
 
   return (
     <div className="relative">

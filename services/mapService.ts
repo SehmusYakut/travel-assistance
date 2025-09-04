@@ -47,6 +47,7 @@ export class GoogleMapsService {
   private static instance: GoogleMapsService;
   private isLoaded = false;
   private loadPromise: Promise<void> | null = null;
+  private scriptElement: HTMLScriptElement | null = null;
 
   private constructor() {}
 
@@ -61,7 +62,7 @@ export class GoogleMapsService {
    * Google Maps API'sini yükler
    */
   loadGoogleMaps(): Promise<void> {
-    if (this.isLoaded) {
+    if (this.isLoaded && window.google && window.google.maps) {
       return Promise.resolve();
     }
 
@@ -70,30 +71,53 @@ export class GoogleMapsService {
     }
 
     this.loadPromise = new Promise((resolve, reject) => {
-      // Eğer script zaten yüklenmişse
+      // Eğer window.google zaten varsa, direkt resolve et
       if (window.google && window.google.maps) {
         this.isLoaded = true;
         resolve();
         return;
       }
 
-      // Var olan script'i kontrol et
-      const existingScript = document.getElementById('google-maps-script');
+      // Var olan script'i kontrol et - ID ile değil, src ile kontrol et
+      const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`) as HTMLScriptElement;
       if (existingScript) {
-        existingScript.addEventListener('load', () => {
+        // Script zaten var, yüklenme durumunu kontrol et
+        if (window.google && window.google.maps) {
           this.isLoaded = true;
           resolve();
-        });
+          return;
+        }
+        
+        // Script var ama henüz yüklenmemiş, event listener ekle
+        const checkLoaded = () => {
+          if (window.google && window.google.maps) {
+            this.isLoaded = true;
+            resolve();
+          }
+        };
+        
+        existingScript.addEventListener('load', checkLoaded);
         existingScript.addEventListener('error', () => {
           reject(new Error('Google Maps script yüklenemedi.'));
         });
+        
+        // Fallback: Script zaten yüklenmişse kontrol et
+        setTimeout(checkLoaded, 100);
         return;
       }
 
       // Yeni script oluştur
       const script = document.createElement('script');
-      script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      this.scriptElement = script;
+      
+      // Unique ID vermek yerine src ile kontrol edeceğiz
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        reject(new Error('Google Maps API anahtarı bulunamadı.'));
+        return;
+      }
+
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
       script.async = true;
 
       script.onload = () => {
@@ -178,6 +202,17 @@ export class GoogleMapsService {
    * Marker'ları temizler
    */
   clearMarkers(markers: google.maps.Marker[]): void {
-    markers.forEach((marker) => marker.setMap(null));
+    if (!markers || markers.length === 0) return;
+    
+    markers.forEach((marker) => {
+      if (marker && typeof marker.setMap === 'function') {
+        try {
+          marker.setMap(null);
+        } catch (error) {
+          // Marker zaten kaldırılmış veya geçersiz, devam et
+          console.warn('Marker could not be removed:', error);
+        }
+      }
+    });
   }
 }

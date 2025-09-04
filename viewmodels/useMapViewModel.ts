@@ -28,6 +28,9 @@ export const useMapViewModel = () => {
 
   // Initialize Google Maps
   const initializeMap = useCallback(async (mapElement: HTMLElement) => {
+    // Prevent multiple initializations
+    if (map || mapState.isLoaded) return;
+    
     try {
       setAppState(prev => ({ ...prev, status: 'loading' }));
       
@@ -58,7 +61,7 @@ export const useMapViewModel = () => {
         errorMessage: error instanceof Error ? error.message : 'Harita yüklenemedi',
       }));
     }
-  }, [mapState.center, mapState.zoom, googleMapsService]);
+  }, [mapState.center, mapState.zoom, map, mapState.isLoaded]); // googleMapsService dependency'sini kaldır
 
   // Find user's current location
   const findCurrentLocation = useCallback(async () => {
@@ -205,7 +208,12 @@ export const useMapViewModel = () => {
     });
 
     setMapState(prev => ({ ...prev, markers: newMarkers }));
-  }, [map, mapState.places, mapState.center, mapState.isLoaded, googleMapsService]);
+
+    // Cleanup function
+    return () => {
+      googleMapsService.clearMarkers(newMarkers);
+    };
+  }, [map, mapState.places, mapState.center, mapState.isLoaded]); // googleMapsService'i kaldır
 
   // Update map when center or zoom changes
   useEffect(() => {
@@ -214,6 +222,15 @@ export const useMapViewModel = () => {
       map.setZoom(mapState.zoom);
     }
   }, [map, mapState.center, mapState.zoom]);
+
+  // Cleanup markers when component unmounts
+  useEffect(() => {
+    return () => {
+      if (mapState.markers.length > 0) {
+        googleMapsService.clearMarkers(mapState.markers);
+      }
+    };
+  }, []);
 
   return {
     mapState,
