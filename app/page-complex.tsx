@@ -1,10 +1,11 @@
 'use client';
 
 import React from 'react';
-import { ActionButton, GuideContent, ErrorMessage } from '../components';
+import { ActionButton } from '../components/ActionButton';
+import { GuideContent } from '../components/GuideContent';
 import { guideData } from '../data/countries';
 
-export default function SimplePage() {
+export default function Home() {
   const [activeContent, setActiveContent] = React.useState<'malaysia' | 'indonesia' | null>(null);
 
   return (
@@ -39,7 +40,7 @@ export default function SimplePage() {
               onClick={() => setActiveContent('indonesia')}
               variant="secondary"
             >
-              🇮🇩 Endonezya Rehberi
+              �🇩 Endonezya Rehberi
             </ActionButton>
           </div>
 
@@ -50,7 +51,7 @@ export default function SimplePage() {
                 <span className="text-6xl mb-4 block">🗺️</span>
                 <p className="text-gray-600">Harita özelliği geliştiriliyor...</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  Google Maps entegrasyonu test ediliyor
+                  Google Maps entegrasyonu yakında ekleniyor
                 </p>
               </div>
             </div>

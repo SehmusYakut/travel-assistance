@@ -36,6 +36,11 @@ export const useMapViewModel = () => {
       
       await googleMapsService.loadGoogleMaps();
       
+      // Additional safety check
+      if (typeof window === 'undefined' || !window.google || !window.google.maps) {
+        throw new Error('Google Maps API yüklenemedi');
+      }
+
       const mapInstance = new window.google.maps.Map(mapElement, {
         center: mapState.center,
         zoom: mapState.zoom,
@@ -55,6 +60,7 @@ export const useMapViewModel = () => {
       setMapState(prev => ({ ...prev, isLoaded: true }));
       setAppState(prev => ({ ...prev, status: 'idle' }));
     } catch (error) {
+      console.error('Map initialization error:', error);
       setAppState(prev => ({
         ...prev,
         status: 'error',
@@ -154,83 +160,103 @@ export const useMapViewModel = () => {
     setMapState(prev => ({ ...prev, places: [] }));
     
     // Clear markers
-    googleMapsService.clearMarkers(mapState.markers);
-    setMapState(prev => ({ ...prev, markers: [] }));
-  }, [mapState.markers, googleMapsService]);
+    if (mapState.markers && mapState.markers.length > 0) {
+      googleMapsService.clearMarkers(mapState.markers);
+      setMapState(prev => ({ ...prev, markers: [] }));
+    }
+  }, [mapState.markers]);
 
-  // Update markers when places change
+  // Update markers when places change - bu useEffect'i optimize edelim
   useEffect(() => {
     if (!map || !mapState.isLoaded) return;
 
-    // Clear existing markers
-    googleMapsService.clearMarkers(mapState.markers);
+    // Clear existing markers safely
+    if (mapState.markers && mapState.markers.length > 0) {
+      googleMapsService.clearMarkers(mapState.markers);
+    }
 
     const newMarkers: google.maps.Marker[] = [];
 
     // Add center marker
-    const centerMarker = googleMapsService.createMarker(map, mapState.center, {
-      title: 'Mevcut Konum',
-      icon: {
-        url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-        scaledSize: new google.maps.Size(40, 40),
-      },
-    });
-    newMarkers.push(centerMarker);
+    try {
+      const centerMarker = googleMapsService.createMarker(map, mapState.center, {
+        title: 'Mevcut Konum',
+        icon: typeof window !== 'undefined' && window.google && window.google.maps ? {
+          url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+          scaledSize: new window.google.maps.Size(40, 40),
+        } : undefined,
+      });
+      newMarkers.push(centerMarker);
 
-    // Add place markers
-    mapState.places.forEach((place) => {
-      const marker = googleMapsService.createMarker(map, place.geometry.location, {
-        title: place.name,
-        icon: place.icon
-          ? {
-              url: place.icon,
-              scaledSize: new google.maps.Size(30, 30),
-            }
-          : undefined,
+      // Add place markers
+      mapState.places.forEach((place) => {
+        try {
+          const marker = googleMapsService.createMarker(map, place.geometry.location, {
+            title: place.name,
+            icon: place.icon && typeof window !== 'undefined' && window.google && window.google.maps
+              ? {
+                  url: place.icon,
+                  scaledSize: new window.google.maps.Size(30, 30),
+                }
+              : undefined,
+          });
+
+          // Add info window
+          if (typeof window !== 'undefined' && window.google && window.google.maps) {
+            const infoWindow = new window.google.maps.InfoWindow({
+              content: `
+                <div style="padding: 8px;">
+                  <h3 style="margin: 0 0 4px 0; font-weight: bold;">${place.name}</h3>
+                  <p style="margin: 0 0 4px 0; color: #666;">${place.vicinity}</p>
+                  ${place.rating ? `<p style="margin: 0; font-weight: 500;">⭐ ${place.rating} (${place.user_ratings_total || 0} yorum)</p>` : ''}
+                </div>
+              `,
+            });
+
+            marker.addListener('click', () => {
+              infoWindow.open(map, marker);
+            });
+          }
+
+          newMarkers.push(marker);
+        } catch (error) {
+          console.warn('Marker oluşturulamadı:', error);
+        }
       });
 
-      // Add info window
-      const infoWindow = new google.maps.InfoWindow({
-        content: `
-          <div style="padding: 8px;">
-            <h3 style="margin: 0 0 4px 0; font-weight: bold;">${place.name}</h3>
-            <p style="margin: 0 0 4px 0; color: #666;">${place.vicinity}</p>
-            ${place.rating ? `<p style="margin: 0; font-weight: 500;">⭐ ${place.rating} (${place.user_ratings_total || 0} yorum)</p>` : ''}
-          </div>
-        `,
-      });
+      setMapState(prev => ({ ...prev, markers: newMarkers }));
+    } catch (error) {
+      console.warn('Marker işlemleri sırasında hata:', error);
+    }
 
-      marker.addListener('click', () => {
-        infoWindow.open(map, marker);
-      });
-
-      newMarkers.push(marker);
-    });
-
-    setMapState(prev => ({ ...prev, markers: newMarkers }));
-
-    // Cleanup function
+    // Cleanup function - bu effect kaldırıldığında çalışır
     return () => {
-      googleMapsService.clearMarkers(newMarkers);
+      if (newMarkers.length > 0) {
+        googleMapsService.clearMarkers(newMarkers);
+      }
     };
-  }, [map, mapState.places, mapState.center, mapState.isLoaded]); // googleMapsService'i kaldır
+  }, [map, mapState.places, mapState.center, mapState.isLoaded]); // markers dependency'sini kaldır
 
   // Update map when center or zoom changes
   useEffect(() => {
     if (map) {
-      map.setCenter(mapState.center);
-      map.setZoom(mapState.zoom);
+      try {
+        map.setCenter(mapState.center);
+        map.setZoom(mapState.zoom);
+      } catch (error) {
+        console.warn('Harita merkezi güncellenemedi:', error);
+      }
     }
   }, [map, mapState.center, mapState.zoom]);
 
   // Cleanup markers when component unmounts
   useEffect(() => {
     return () => {
-      if (mapState.markers.length > 0) {
+      if (mapState.markers && mapState.markers.length > 0) {
         googleMapsService.clearMarkers(mapState.markers);
       }
     };
-  }, []);
+  }, []); // Empty dependency array - sadece unmount'ta çalışsın
 
   return {
     mapState,

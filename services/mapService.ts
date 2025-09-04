@@ -145,7 +145,7 @@ export class GoogleMapsService {
     radius: number = 2000
   ): Promise<Place[]> {
     return new Promise((resolve, reject) => {
-      if (!window.google || !window.google.maps) {
+      if (typeof window === 'undefined' || !window.google || !window.google.maps) {
         reject(new Error('Google Maps API henüz yüklenmedi.'));
         return;
       }
@@ -191,6 +191,10 @@ export class GoogleMapsService {
     position: Location,
     options: Partial<google.maps.MarkerOptions> = {}
   ): google.maps.Marker {
+    if (typeof window === 'undefined' || !window.google || !window.google.maps) {
+      throw new Error('Google Maps API yüklenmemiş');
+    }
+
     return new window.google.maps.Marker({
       position,
       map,
