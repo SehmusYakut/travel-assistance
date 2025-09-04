@@ -1,0 +1,69 @@
+'use client';
+
+import React from 'react';
+import { Place } from '../models/types';
+
+interface PlacesListProps {
+  places: Place[];
+  isLoading: boolean;
+}
+
+export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading }) => {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
+        <p className="text-blue-600 font-medium">Mekanlar aranıyor...</p>
+      </div>
+    );
+  }
+
+  if (places.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+        Bulunan Mekanlar ({places.length})
+      </h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {places.map((place) => (
+          <div
+            key={place.place_id}
+            className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <h3 className="font-bold text-lg text-gray-900 truncate pr-2">
+                {place.name}
+              </h3>
+              {place.rating && (
+                <div className="flex items-center ml-2 flex-shrink-0">
+                  <span className="text-yellow-500 text-sm">⭐</span>
+                  <span className="text-sm font-semibold text-gray-700 ml-1">
+                    {place.rating.toFixed(1)}
+                  </span>
+                </div>
+              )}
+            </div>
+            
+            <p className="text-sm text-gray-600 mb-3 overflow-hidden">
+              {place.vicinity}
+            </p>
+
+            <div className="flex items-center justify-between text-xs text-gray-500">
+              <span>
+                {place.user_ratings_total ? `${place.user_ratings_total} yorum` : 'Yorum yok'}
+              </span>
+              {place.types && place.types.length > 0 && (
+                <span className="bg-gray-100 px-2 py-1 rounded-full">
+                  {place.types[0].replace(/_/g, ' ')}
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};

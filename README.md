@@ -1,36 +1,163 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Gezgin Rehberi 🗺️
 
-## Getting Started
+Bu proje, Malezya ve Endonezya için kapsamlı bir seyahat rehberi web uygulamasıdır. Google Maps API'sini kullanarak yakındaki mekanları bulur ve güvenlik bilgileri sunar.
 
-First, run the development server:
+## 🚀 Özellikler
+
+- **Konum Tabanlı Arama**: Kullanıcının mevcut konumunu bulur
+- **Yakın Mekanlar**: Restoranlar, ulaşım imkanları ve diğer önemli yerleri listeler
+- **İnteraktif Harita**: Google Maps entegrasyonu ile harita görünümü
+- **Ülke Rehberleri**: Malezya ve Endonezya için detaylı seyahat bilgileri
+- **Güvenlik Uyarıları**: Seyahat güvenliği için önemli ipuçları
+- **Responsive Tasarım**: Mobil ve masaüstü uyumlu
+
+## 🏗️ Teknoloji Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Maps**: Google Maps API (@react-google-maps/api)
+- **Architecture**: MVVM Pattern
+- **Deployment**: Vercel Ready
+
+## 📁 Proje Yapısı (MVVM Pattern)
+
+```
+gezgin-rehberi/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes (Backend)
+│   │   └── places/        # Places API endpoint
+│   ├── page.tsx           # Ana sayfa (View)
+│   └── layout.tsx         # Layout bileşeni
+├── components/            # View Components
+│   ├── MapComponent.tsx   # Harita bileşeni
+│   ├── ActionButton.tsx   # Aksiyon butonları
+│   ├── PlacesList.tsx     # Mekan listesi
+│   ├── GuideContent.tsx   # Rehber içeriği
+│   └── ErrorMessage.tsx   # Hata mesajları
+├── viewmodels/            # View Models (Business Logic)
+│   └── useMapViewModel.ts # Ana view model hook
+├── models/                # Data Models & Types
+│   └── types.ts           # TypeScript tip tanımları
+├── services/              # Business Services
+│   └── mapService.ts      # Harita ve konum servisleri
+├── data/                  # Static Data
+│   └── countries.ts       # Ülke verileri (Malezya, Endonezya)
+└── .env.local            # Ortam değişkenleri
+```
+
+## 🔧 Kurulum
+
+### 1. Projeyi Klonlayın
+
+```bash
+git clone <repository-url>
+cd gezgin-rehberi
+```
+
+### 2. Bağımlılıkları Yükleyin
+
+```bash
+npm install
+```
+
+### 3. Google Maps API Anahtarı Alın
+
+1. [Google Cloud Platform](https://console.cloud.google.com/) hesabı oluşturun
+2. Yeni bir proje oluşturun
+3. Aşağıdaki API'ları etkinleştirin:
+   - Maps JavaScript API
+   - Places API
+   - Geocoding API
+4. API anahtarı oluşturun
+
+### 4. Ortam Değişkenlerini Ayarlayın
+
+`.env.local` dosyasında:
+
+```env
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY="BURAYA_API_ANAHTARINIZI_YAPISTIRIN"
+```
+
+### 5. Uygulamayı Çalıştırın
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uygulama [http://localhost:3000](http://localhost:3000) adresinde açılacaktır.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Vercel'e Dağıtım
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. GitHub'a Gönderin
 
-## Learn More
+```bash
+git add .
+git commit -m "Initial commit"
+git push origin main
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 2. Vercel'de Dağıtım
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. [Vercel Dashboard](https://vercel.com/dashboard) açın
+2. "New Project" tıklayın
+3. GitHub repository'nizi seçin
+4. Environment Variables bölümünde `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` ekleyin
+5. "Deploy" tıklayın
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🏗️ MVVM Architecture Açıklaması
 
-## Deploy on Vercel
+### Model (models/)
+- Veri tiplerini ve interface'leri tanımlar
+- `types.ts`: TypeScript tip tanımları
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### View (components/ + app/page.tsx)
+- Kullanıcı arayüzü bileşenlerini içerir
+- Sadece görüntüleme ve kullanıcı etkileşimlerinden sorumlu
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### ViewModel (viewmodels/)
+- İş mantığını ve state yönetimini handle eder
+- View ile Model arasındaki köprü görevi görür
+- `useMapViewModel.ts`: Ana business logic hook
+
+### Services (services/)
+- Dış API'lar ve servislerle iletişimi sağlar
+- Google Maps API integration
+
+## 🔒 Güvenlik
+
+- API anahtarları environment variables ile güvenli şekilde saklanır
+- Client-side ve server-side API çağrıları ayrılmıştır
+- HTTP referrer restrictions önerilir (production için)
+
+## 🌍 Desteklenen Özellikler
+
+- ✅ Konum bulma
+- ✅ Yakın restoran arama
+- ✅ Ulaşım imkanları
+- ✅ Malezya rehberi
+- ✅ Endonezya rehberi
+- ✅ İnteraktif harita
+- ✅ Responsive tasarım
+- ✅ Error handling
+- ✅ Loading states
+
+## 📝 Lisans
+
+Bu proje MIT lisansı altında lisanslanmıştır.
+
+## 🤝 Katkıda Bulunma
+
+1. Fork yapın
+2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
+3. Commit yapın (`git commit -m 'Add amazing feature'`)
+4. Push yapın (`git push origin feature/amazing-feature`)
+5. Pull Request oluşturun
+
+## 📞 İletişim
+
+Sorular için issue açabilir veya pull request gönderebilirsiniz.
+
+---
+
+**🌟 Bu proje Google Maps API kullanarak geliştirilmiştir. Güvenli seyahatler dileriz! 🧳✈️**
