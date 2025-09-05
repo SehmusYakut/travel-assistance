@@ -103,6 +103,7 @@ export const RouteComponent: React.FC<RouteComponentProps> = ({
   }, [directionsRenderer]);
 
   const quickDestinations = [
+    '🏨 Anggun Residences KLCC (Otellim)',
     'KLCC Kuala Lumpur',
     'Petronas Twin Towers',
     'Batu Caves',
@@ -144,8 +145,19 @@ export const RouteComponent: React.FC<RouteComponentProps> = ({
           {quickDestinations.map((dest) => (
             <button
               key={dest}
-              onClick={() => setDestination(dest)}
-              className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors"
+              onClick={() => {
+                // Otel için tam adresi kullan
+                if (dest.includes('Anggun Residences')) {
+                  setDestination('8, Jalan Medan Tuanku, Chow Kit, 50250 Kuala Lumpur, Malaysia');
+                } else {
+                  setDestination(dest.replace(/🏨|🛣️/g, '').trim());
+                }
+              }}
+              className={`px-3 py-1 text-xs rounded-full transition-colors ${
+                dest.includes('Otellim') 
+                  ? 'bg-blue-100 text-blue-700 hover:bg-blue-200 font-medium'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
             >
               {dest}
             </button>

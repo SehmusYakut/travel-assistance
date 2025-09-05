@@ -9,6 +9,7 @@ import { PlacesList } from '../components/PlacesList';
 import { GuideContent } from '../components/GuideContent';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { RouteComponent } from '../components/RouteComponent';
+import { WeatherComponent } from '../components/WeatherComponent';
 
 export default function Home() {
   const {
@@ -100,6 +101,9 @@ export default function Home() {
               userLocation={mapState.userLocation}
             />
           )}
+
+          {/* Weather Information */}
+          <WeatherComponent userLocation={mapState.userLocation} />
 
           {/* Content Section */}
           <div className="space-y-6">
