@@ -35,9 +35,24 @@ export const GuideContent: React.FC<GuideContentProps> = ({ guideContent }) => {
                   )}
                 </div>
               </div>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed mb-2">
                 {attraction.description}
               </p>
+              {attraction.mapUrl && (
+                <a
+                  href={attraction.mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-700 mb-1 underline hover:text-blue-900"
+                >
+                  <span className="font-semibold">Google Maps'te Gör</span>
+                </a>
+              )}
+              {attraction.transport && (
+                <p className="text-xs text-indigo-700 mb-1">
+                  <span className="font-semibold">Nasıl ulaşırım?</span> {attraction.transport}
+                </p>
+              )}
             </div>
           ))}
         </div>
@@ -66,18 +81,19 @@ export const GuideContent: React.FC<GuideContentProps> = ({ guideContent }) => {
       </section>
 
       {/* İpuçları */}
-      <section className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
-        <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center">
-          <span className="text-lg mr-2">💡</span>
-          Faydalı İpuçları
-        </h3>
-        <div className="space-y-2 text-green-700">
-          <p>• Yerel SIM kart alarak internet erişiminizi sağlayın</p>
-          <p>• Ulaşım için yerel uygulamaları indirin (Grab vb.)</p>
-          <p>• Önemli belgelerin kopyalarını ayrı yerlerde saklayın</p>
-          <p>• Yerel para birimini önceden araştırın</p>
-        </div>
-      </section>
+      {guideContent.tips && (
+        <section className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+          <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center">
+            <span className="text-lg mr-2">💡</span>
+            Faydalı İpuçları
+          </h3>
+          <div className="space-y-2 text-green-700">
+            {guideContent.tips.map((tip, idx) => (
+              <p key={idx}>• {tip}</p>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

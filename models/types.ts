@@ -22,11 +22,16 @@ export interface Attraction {
   name: string;
   city?: string;
   description: string;
+  location?: Location;
+  transport?: string;
+  mapUrl?: string;
 }
 
 export interface CountryData {
   attractions: Attraction[];
   safetyWarnings: string[];
+  tips?: string[];
+  food?: { name: string; description: string }[];
 }
 
 export interface GuideData {
@@ -46,6 +51,7 @@ export interface AppState {
   errorMessage: string;
   activeTab: 'map' | 'guide';
   guideContent: CountryData | null;
+  searchType?: string;
 }
 
 export enum PlaceType {

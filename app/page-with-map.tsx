@@ -108,6 +108,7 @@ export default function Home() {
               <PlacesList
                 places={mapState.places}
                 isLoading={appState.status === 'loading'}
+                searchType={appState.searchType}
               />
             )}
 

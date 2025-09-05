@@ -6,14 +6,35 @@ import { Place } from '../models/types';
 interface PlacesListProps {
   places: Place[];
   isLoading: boolean;
+  searchType?: string;
 }
 
-export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading }) => {
+export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading, searchType }) => {
+  const getLoadingMessage = () => {
+    switch (searchType) {
+      case 'restaurant':
+        return '🍽️ En iyi restoranlar aranıyor...';
+      case 'train_station':
+        return '🚊 En iyi ulaşım rotaları belirleniyor...';
+      case 'tourist_attraction':
+        return '🏛️ Popüler turistik yerler aranıyor...';
+      case 'hospital':
+        return '🏥 Yakın sağlık merkezleri aranıyor...';
+      case 'atm':
+        return '💳 En yakın ATMler aranıyor...';
+      default:
+        return '📍 Mekanlar aranıyor...';
+    }
+  };
+
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mr-3"></div>
-        <p className="text-blue-600 font-medium">Mekanlar aranıyor...</p>
+      <div className="flex flex-col items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
+        <p className="text-blue-600 font-medium">{getLoadingMessage()}</p>
+        <p className="text-sm text-gray-500 mt-2">
+          Gerçek Google Places API'den veri çekiliyor...
+        </p>
       </div>
     );
   }

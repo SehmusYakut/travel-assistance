@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PlaceType } from '../models/types';
-import { useMapViewModel } from '../viewmodels/useMapViewModel';
+import { useSimpleMapViewModel } from '../viewmodels/useSimpleMapViewModel';
 import { ActionButton } from '../components/ActionButton';
 import { MapComponent } from '../components/MapComponent';
 import { PlacesList } from '../components/PlacesList';
@@ -13,11 +13,11 @@ export default function Home() {
   const {
     mapState,
     appState,
-    initializeMap,
+    handleMapLoad,
     findCurrentLocation,
     searchNearbyPlaces,
     showCountryGuide,
-  } = useMapViewModel();
+  } = useSimpleMapViewModel();
 
   return (
     <div className="bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen font-sans text-gray-800">
@@ -84,8 +84,11 @@ export default function Home() {
           {/* Map Section */}
           <div className="mb-8">
             <MapComponent
-              onMapLoad={initializeMap}
-              isLoaded={mapState.isLoaded}
+              center={mapState.center}
+              zoom={mapState.zoom}
+              userLocation={mapState.userLocation}
+              places={mapState.places}
+              onMapLoad={handleMapLoad}
             />
           </div>
 

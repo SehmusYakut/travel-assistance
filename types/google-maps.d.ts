@@ -20,6 +20,46 @@ declare global {
         mapTypeControl?: boolean;
         fullscreenControl?: boolean;
         styles?: MapTypeStyle[];
+        mapTypeId?: MapTypeId;
+      }
+
+      enum MapTypeId {
+        ROADMAP = 'roadmap',
+        SATELLITE = 'satellite',
+        HYBRID = 'hybrid',
+        TERRAIN = 'terrain'
+      }
+
+      class Marker {
+        constructor(opts?: MarkerOptions);
+        setMap(map: Map | null): void;
+        addListener(eventName: string, handler: () => void): void;
+      }
+
+      interface MarkerOptions {
+        position?: LatLng | LatLngLiteral;
+        map?: Map;
+        title?: string;
+        icon?: string | MarkerIcon;
+      }
+
+      interface MarkerIcon {
+        url: string;
+        scaledSize?: Size;
+      }
+
+      class InfoWindow {
+        constructor(opts?: InfoWindowOptions);
+        open(map: Map, anchor?: Marker): void;
+        close(): void;
+      }
+
+      interface InfoWindowOptions {
+        content?: string;
+      }
+
+      class Size {
+        constructor(width: number, height: number);
       }
 
       interface MapTypeStyle {

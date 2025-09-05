@@ -47,7 +47,6 @@ export class GoogleMapsService {
   private static instance: GoogleMapsService;
   private isLoaded = false;
   private loadPromise: Promise<void> | null = null;
-  private scriptElement: HTMLScriptElement | null = null;
 
   private constructor() {}
 
@@ -62,7 +61,7 @@ export class GoogleMapsService {
    * Google Maps API'sini yükler
    */
   loadGoogleMaps(): Promise<void> {
-    if (this.isLoaded && window.google && window.google.maps) {
+    if (this.isLoaded && typeof window !== 'undefined' && window.google && window.google.maps) {
       return Promise.resolve();
     }
 
@@ -71,6 +70,12 @@ export class GoogleMapsService {
     }
 
     this.loadPromise = new Promise((resolve, reject) => {
+      // Server-side rendering check
+      if (typeof window === 'undefined') {
+        reject(new Error('Window object not available'));
+        return;
+      }
+
       // Eğer window.google zaten varsa, direkt resolve et
       if (window.google && window.google.maps) {
         this.isLoaded = true;
@@ -78,57 +83,56 @@ export class GoogleMapsService {
         return;
       }
 
-      // Var olan script'i kontrol et - ID ile değil, src ile kontrol et
-      const existingScript = document.querySelector(`script[src*="maps.googleapis.com"]`) as HTMLScriptElement;
+      // Script zaten yüklü mü kontrol et (src ile)
+      const existingScript = document.querySelector('script[src*="maps.googleapis.com/maps/api/js"]');
       if (existingScript) {
-        // Script zaten var, yüklenme durumunu kontrol et
-        if (window.google && window.google.maps) {
-          this.isLoaded = true;
-          resolve();
-          return;
-        }
-        
-        // Script var ama henüz yüklenmemiş, event listener ekle
-        const checkLoaded = () => {
+        // Script var, API yüklenmesini bekle
+        const checkInterval = setInterval(() => {
           if (window.google && window.google.maps) {
+            clearInterval(checkInterval);
             this.isLoaded = true;
             resolve();
           }
-        };
+        }, 100);
         
-        existingScript.addEventListener('load', checkLoaded);
-        existingScript.addEventListener('error', () => {
-          reject(new Error('Google Maps script yüklenemedi.'));
-        });
-        
-        // Fallback: Script zaten yüklenmişse kontrol et
-        setTimeout(checkLoaded, 100);
+        // 10 saniye timeout
+        setTimeout(() => {
+          clearInterval(checkInterval);
+          if (!this.isLoaded) {
+            reject(new Error('Google Maps API yüklenemedi (timeout)'));
+          }
+        }, 10000);
+        return;
+      }
+
+      // API key kontrolü
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+        reject(new Error('Google Maps API anahtarı tanımlı değil'));
         return;
       }
 
       // Yeni script oluştur
       const script = document.createElement('script');
-      this.scriptElement = script;
-      
-      // Unique ID vermek yerine src ile kontrol edeceğiz
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-      if (!apiKey) {
-        reject(new Error('Google Maps API anahtarı bulunamadı.'));
-        return;
-      }
-
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
       script.async = true;
+      script.defer = true;
 
       script.onload = () => {
-        this.isLoaded = true;
-        resolve();
+        // Double check
+        if (window.google && window.google.maps) {
+          this.isLoaded = true;
+          resolve();
+        } else {
+          reject(new Error('Google Maps API yüklendi ama erişilemiyor'));
+        }
       };
 
       script.onerror = () => {
         reject(new Error('Google Maps script yüklenemedi. API anahtarınızı kontrol edin.'));
       };
 
+      // Script'i DOM'a ekle
       document.head.appendChild(script);
     });
 
@@ -136,31 +140,55 @@ export class GoogleMapsService {
   }
 
   /**
-   * Belirli bir konumun yakınındaki mekanları arar
+   * Belirli bir konumun yakınındaki mekanları arar - Gerçek Google Places API
    */
   searchNearbyPlaces(
     map: google.maps.Map,
     location: Location,
     type: string,
-    radius: number = 2000
+    radius: number = 1000
   ): Promise<Place[]> {
     return new Promise((resolve, reject) => {
+      console.log('🚀 Gerçek API Arama başlatıldı - Type:', type, 'Location:', location);
+      
       if (typeof window === 'undefined' || !window.google || !window.google.maps) {
+        console.error('❌ Google Maps API yüklenmemiş');
         reject(new Error('Google Maps API henüz yüklenmedi.'));
         return;
       }
 
+      if (!window.google.maps.places) {
+        console.error('❌ Google Places API yüklenmemiş');
+        reject(new Error('Google Places API yüklenmemiş. Lütfen Google Cloud Console\'dan Places API\'yi etkinleştirin.'));
+        return;
+      }
+
       const service = new window.google.maps.places.PlacesService(map);
+      
+      // Daha spesifik arama parametreleri
       const request: google.maps.places.PlaceSearchRequest = {
-        location: location,
+        location: new google.maps.LatLng(location.lat, location.lng),
         radius: radius,
-        type: [type] as any,
+        type: type === 'train_station' ? 'transit_station' : type
       };
 
+      console.log('📍 Places API çağrısı yapılıyor...', request);
+
+      const timeoutId = setTimeout(() => {
+        console.log('⏰ API Timeout - Google Cloud Console ayarlarını kontrol edin:');
+        console.log('1. https://console.cloud.google.com/apis/dashboard adresine gidin');
+        console.log('2. Places API etkin mi kontrol edin');
+        console.log('3. Billing hesabı aktif mi kontrol edin');
+        console.log('4. API key kısıtlamalarını kontrol edin');
+        reject(new Error('Places API timeout. Google Cloud Console ayarlarını kontrol edin.'));
+      }, 15000);
+
       service.nearbySearch(request, (results, status) => {
-        if (status === window.google.maps.places.PlacesServiceStatus.OK && results) {
-          // Google Places API sonuçlarını kendi Place tipimize dönüştür
-          const places: Place[] = results.map((result) => ({
+        clearTimeout(timeoutId);
+        console.log('🔥 Google Places API Yanıtı - Status:', status);
+        
+        if (status === window.google.maps.places.PlacesServiceStatus.OK && results && results.length > 0) {
+          const places: Place[] = results.slice(0, 10).map((result) => ({
             place_id: result.place_id || '',
             name: result.name || '',
             vicinity: result.vicinity || '',
@@ -175,12 +203,73 @@ export class GoogleMapsService {
             icon: result.icon,
             types: result.types || [],
           }));
+          
+          console.log('✅ Gerçek API verisi:', places.length, 'mekan bulundu');
+          console.log('📊 Bulunan mekanlar:', places.map(p => p.name));
           resolve(places);
+        } else if (status === window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
+          console.log('🤷‍♂️ Bu konumda hiç sonuç bulunamadı, daha geniş arama yapılıyor...');
+          
+          // Daha geniş arama yap
+          const widerRequest = {
+            ...request,
+            radius: radius * 3,
+          };
+          
+          service.nearbySearch(widerRequest, (widerResults, widerStatus) => {
+            if (widerStatus === window.google.maps.places.PlacesServiceStatus.OK && widerResults && widerResults.length > 0) {
+              const places: Place[] = widerResults.slice(0, 10).map((result) => ({
+                place_id: result.place_id || '',
+                name: result.name || '',
+                vicinity: result.vicinity || '',
+                rating: result.rating,
+                user_ratings_total: result.user_ratings_total,
+                geometry: {
+                  location: {
+                    lat: result.geometry?.location?.lat() || 0,
+                    lng: result.geometry?.location?.lng() || 0,
+                  },
+                },
+                icon: result.icon,
+                types: result.types || [],
+              }));
+              
+              console.log('✅ Geniş arama ile bulunan:', places.length, 'mekan');
+              resolve(places);
+            } else {
+              console.log('❌ Geniş aramada da sonuç yok');
+              resolve([]);
+            }
+          });
         } else {
-          reject(new Error(`Mekan arama başarısız: ${status}`));
+          console.error('❌ Places API Hatası - Status:', status);
+          
+          // Hata türüne göre özel mesajlar
+          let errorMessage = `Places API Hatası: ${status}`;
+          switch (status) {
+            case window.google.maps.places.PlacesServiceStatus.OVER_QUERY_LIMIT:
+              errorMessage = 'API quota aşıldı. Google Cloud Console\'dan quota limitini artırın.';
+              break;
+            case window.google.maps.places.PlacesServiceStatus.REQUEST_DENIED:
+              errorMessage = 'API key geçersiz veya Places API etkin değil.';
+              break;
+            case window.google.maps.places.PlacesServiceStatus.INVALID_REQUEST:
+              errorMessage = 'Geçersiz arama parametresi.';
+              break;
+          }
+          
+          reject(new Error(errorMessage));
         }
       });
     });
+  }
+
+  /**
+   * Places API çalışmadığında kullanılacak örnek veriler - KALDIRILDI
+   */
+  private getFallbackPlaces(type: string, location: Location): Place[] {
+    // Artık fallback kullanmıyoruz, sadı gerçek API
+    return [];
   }
 
   /**
