@@ -27,7 +27,7 @@ export default function RootLayout({
       <head>
         <script
           async
-          src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyC5HisiYRj__It8PHJY5Prd5q5oTeEUXbA&libraries=places&loading=async`}
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&loading=async`}
         ></script>
       </head>
       <body
