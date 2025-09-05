@@ -11,6 +11,7 @@ interface MapState {
   zoom: number;
   userLocation: Location | null;
   places: Place[];
+  map: google.maps.Map | null;
 }
 
 interface AppState {
@@ -25,7 +26,8 @@ export const useSimpleMapViewModel = () => {
     center: { lat: 4.2105, lng: 101.9758 }, // Malaysia center
     zoom: 6,
     userLocation: null,
-    places: []
+    places: [],
+    map: null
   });
 
   const [appState, setAppState] = useState<AppState>({
@@ -40,6 +42,7 @@ export const useSimpleMapViewModel = () => {
   // Handle map initialization
   const handleMapLoad = useCallback((mapInstance: google.maps.Map) => {
     setMap(mapInstance);
+    setMapState(prev => ({ ...prev, map: mapInstance }));
     console.log('✅ Map loaded successfully');
   }, []);
 

@@ -44,6 +44,8 @@ export interface MapState {
   places: Place[];
   markers: google.maps.Marker[];
   isLoaded: boolean;
+  map: google.maps.Map | null;
+  userLocation: Location | null;
 }
 
 export interface AppState {

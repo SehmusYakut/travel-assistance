@@ -11,6 +11,8 @@ declare global {
         constructor(mapDiv: HTMLElement, opts?: MapOptions);
         setCenter(latLng: LatLng | LatLngLiteral): void;
         setZoom(zoom: number): void;
+        getZoom(): number | undefined;
+        fitBounds(bounds: LatLngBounds): void;
       }
 
       interface MapOptions {
@@ -34,6 +36,7 @@ declare global {
         constructor(opts?: MarkerOptions);
         setMap(map: Map | null): void;
         addListener(eventName: string, handler: () => void): void;
+        getPosition(): LatLng | null;
       }
 
       interface MarkerOptions {
@@ -41,11 +44,35 @@ declare global {
         map?: Map;
         title?: string;
         icon?: string | MarkerIcon;
+        animation?: Animation;
+        label?: MarkerLabel;
       }
 
       interface MarkerIcon {
         url: string;
         scaledSize?: Size;
+      }
+
+      interface MarkerLabel {
+        text: string;
+        color?: string;
+        fontWeight?: string;
+        fontSize?: string;
+      }
+
+      enum Animation {
+        BOUNCE = 1,
+        DROP = 2
+      }
+
+      class LatLngBounds {
+        constructor();
+        extend(latLng: LatLng | LatLngLiteral): void;
+      }
+
+      namespace event {
+        function addListener(instance: any, eventName: string, handler: () => void): any;
+        function removeListener(listener: any): void;
       }
 
       class InfoWindow {
@@ -150,6 +177,78 @@ declare global {
           INVALID_REQUEST = 'INVALID_REQUEST',
           UNKNOWN_ERROR = 'UNKNOWN_ERROR'
         }
+      }
+
+      // Directions API
+      class DirectionsService {
+        route(request: DirectionsRequest, callback: (result: DirectionsResult | null, status: DirectionsStatus) => void): void;
+      }
+
+      class DirectionsRenderer {
+        constructor(opts?: DirectionsRendererOptions);
+        setMap(map: Map | null): void;
+        setDirections(directions: DirectionsResult): void;
+      }
+
+      interface DirectionsRendererOptions {
+        suppressMarkers?: boolean;
+        polylineOptions?: {
+          strokeColor?: string;
+          strokeOpacity?: number;
+          strokeWeight?: number;
+        };
+      }
+
+      interface DirectionsRequest {
+        origin: LatLng | LatLngLiteral | string;
+        destination: LatLng | LatLngLiteral | string;
+        travelMode: TravelMode;
+        unitSystem?: UnitSystem;
+        avoidHighways?: boolean;
+        avoidTolls?: boolean;
+      }
+
+      interface DirectionsResult {
+        routes: DirectionsRoute[];
+      }
+
+      interface DirectionsRoute {
+        legs: DirectionsLeg[];
+      }
+
+      interface DirectionsLeg {
+        distance?: { text: string; value: number };
+        duration?: { text: string; value: number };
+        steps: DirectionsStep[];
+      }
+
+      interface DirectionsStep {
+        instructions: string;
+        distance?: { text: string; value: number };
+        duration?: { text: string; value: number };
+      }
+
+      enum DirectionsStatus {
+        OK = 'OK',
+        NOT_FOUND = 'NOT_FOUND',
+        ZERO_RESULTS = 'ZERO_RESULTS',
+        MAX_WAYPOINTS_EXCEEDED = 'MAX_WAYPOINTS_EXCEEDED',
+        INVALID_REQUEST = 'INVALID_REQUEST',
+        OVER_QUERY_LIMIT = 'OVER_QUERY_LIMIT',
+        REQUEST_DENIED = 'REQUEST_DENIED',
+        UNKNOWN_ERROR = 'UNKNOWN_ERROR'
+      }
+
+      enum TravelMode {
+        DRIVING = 'DRIVING',
+        WALKING = 'WALKING',
+        BICYCLING = 'BICYCLING',
+        TRANSIT = 'TRANSIT'
+      }
+
+      enum UnitSystem {
+        METRIC = 0,
+        IMPERIAL = 1
       }
     }
   }

@@ -8,6 +8,7 @@ import { MapComponent } from '../components/MapComponent';
 import { PlacesList } from '../components/PlacesList';
 import { GuideContent } from '../components/GuideContent';
 import { ErrorMessage } from '../components/ErrorMessage';
+import { RouteComponent } from '../components/RouteComponent';
 
 export default function Home() {
   const {
@@ -91,6 +92,14 @@ export default function Home() {
               onMapLoad={handleMapLoad}
             />
           </div>
+
+          {/* Route Planning */}
+          {mapState.map && (
+            <RouteComponent
+              map={mapState.map}
+              userLocation={mapState.userLocation}
+            />
+          )}
 
           {/* Content Section */}
           <div className="space-y-6">

@@ -86,13 +86,25 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     markersRef.current = [];
   }, []);
 
-  // Add markers for places
+  // Add markers for places with better icons and info
   const addPlaceMarkers = useCallback(() => {
     if (!map) return;
 
     clearMarkers();
 
-    places.forEach((place) => {
+    places.forEach((place, index) => {
+      // Choose icon based on place type
+      let iconUrl = 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/generic_business-71.png';
+      let iconColor = '#FF6B6B';
+      
+      if (place.types?.includes('restaurant') || place.types?.includes('food')) {
+        iconUrl = 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png';
+        iconColor = '#FF6B6B';
+      } else if (place.types?.includes('transit_station')) {
+        iconUrl = 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/transit_station-71.png';
+        iconColor = '#4ECDC4';
+      }
+
       const marker = new google.maps.Marker({
         position: {
           lat: place.geometry.location.lat,
@@ -101,25 +113,46 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         map,
         title: place.name,
         icon: {
-          url: place.icon || 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/generic_business-71.png',
+          url: place.icon || iconUrl,
           scaledSize: new google.maps.Size(32, 32),
         },
+        animation: google.maps.Animation.DROP,
+        label: {
+          text: (index + 1).toString(),
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '12px'
+        }
       });
 
       const infoWindow = new google.maps.InfoWindow({
         content: `
-          <div class="p-2">
-            <h3 class="font-bold text-sm">${place.name}</h3>
-            <p class="text-xs text-gray-600">${place.vicinity || ''}</p>
+          <div class="p-3 max-w-xs">
+            <h3 class="font-bold text-base text-gray-900 mb-2">${place.name}</h3>
+            <p class="text-sm text-gray-600 mb-2">${place.vicinity || 'Konum bilgisi yok'}</p>
             ${place.rating ? `
-              <div class="flex items-center mt-1">
-                <span class="text-yellow-500 text-xs">⭐</span>
-                <span class="text-xs ml-1">${place.rating}</span>
+              <div class="flex items-center mb-2">
+                <span class="text-yellow-500 text-base">⭐</span>
+                <span class="text-sm ml-1 font-medium">${place.rating}</span>
                 ${place.user_ratings_total ? `
-                  <span class="text-xs text-gray-500 ml-1">(${place.user_ratings_total})</span>
+                  <span class="text-xs text-gray-500 ml-1">(${place.user_ratings_total} değerlendirme)</span>
                 ` : ''}
               </div>
             ` : ''}
+            <div class="flex space-x-2 mt-2">
+              <button 
+                onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${place.geometry.location.lat},${place.geometry.location.lng}')" 
+                class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600"
+              >
+                🗺️ Rota Al
+              </button>
+              <button 
+                onclick="window.open('https://www.google.com/maps/place/?q=place_id:${place.place_id}')" 
+                class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600"
+              >
+                📍 Detaylar
+              </button>
+            </div>
           </div>
         `,
       });
@@ -128,8 +161,29 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         infoWindow.open(map, marker);
       });
 
+      // Auto center map to show all markers
+      if (index === 0) {
+        map.setCenter(marker.getPosition()!);
+        map.setZoom(14);
+      }
+
       markersRef.current.push(marker);
     });
+
+    // Fit map to show all markers
+    if (places.length > 1) {
+      const bounds = new google.maps.LatLngBounds();
+      places.forEach(place => {
+        bounds.extend(new google.maps.LatLng(place.geometry.location.lat, place.geometry.location.lng));
+      });
+      map.fitBounds(bounds);
+      
+      // Don't zoom too close
+      const listener = google.maps.event.addListener(map, "idle", function() {
+        if (map.getZoom()! > 16) map.setZoom(16);
+        google.maps.event.removeListener(listener);
+      });
+    }
   }, [map, places, clearMarkers]);
 
   // Add user location marker
