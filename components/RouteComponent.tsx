@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { Location } from '../models/types';
-import { useApp } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 
 interface RouteComponentProps {
   map: google.maps.Map | null;
@@ -15,7 +15,7 @@ export const RouteComponent: React.FC<RouteComponentProps> = ({
   map,
   userLocation,
 }) => {
-  const { t, language } = useApp();
+  const { t, language } = useAppContext();
   const [destination, setDestination] = useState('');
   const [travelMode, setTravelMode] = useState<TravelMode>('DRIVING');
   const [isCalculating, setIsCalculating] = useState(false);

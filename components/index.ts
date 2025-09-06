@@ -4,4 +4,4 @@ export { PlacesList } from './PlacesList';
 export { GuideContent } from './GuideContent';
 export { ErrorMessage } from './ErrorMessage';
 export { RouteComponent } from './RouteComponent';
-export { WeatherComponent } from './WeatherComponent';
+export { default as WeatherComponent } from './WeatherComponent';

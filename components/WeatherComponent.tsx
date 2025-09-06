@@ -1,263 +1,368 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Location } from '../models/types';
-import { WeatherService, WeatherData } from '../services/weatherService';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useAppContext } from '../contexts/AppContext';
+import { getWeatherByCoords, getWeatherByCity, getForecastByCoords, getForecastByCity, WeatherData, ForecastData } from '../services/weatherService';
 
 interface WeatherComponentProps {
-  userLocation: Location | null;
+  selectedCity?: string;
 }
 
-export const WeatherComponent: React.FC<WeatherComponentProps> = ({ userLocation }) => {
+const WeatherComponent: React.FC<WeatherComponentProps> = ({ selectedCity }) => {
+  const { language, t } = useAppContext();
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [forecastData, setForecastData] = useState<ForecastData | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCity, setSelectedCity] = useState<string>('');
+  const [showForecast, setShowForecast] = useState(false);
 
-  const weatherService = WeatherService.getInstance();
-
-  const popularCities = [
-    { name: 'Kuala Lumpur', flag: '🇲🇾' },
-    { name: 'Penang', flag: '🇲🇾' },
-    { name: 'Jakarta', flag: '🇮🇩' },
-    { name: 'Bali', flag: '🇮🇩' },
-  ];
-
-  const fetchWeatherByLocation = useCallback(async (location: Location) => {
-    setIsLoading(true);
+  const fetchWeather = useCallback(async (city: string) => {
+    setLoading(true);
     setError(null);
     
     try {
-      const weather = await weatherService.getWeatherByCoords(location.lat, location.lng);
-      setWeatherData(weather);
+      // Mevcut hava durumu
+      const currentWeather = await getWeatherByCity(city);
+      setWeatherData(currentWeather);
+      
+      // 5 günlük tahmin
+      const forecast = await getForecastByCity(city);
+      setForecastData(forecast);
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Hava durumu alınamadı');
+      setError(err instanceof Error ? err.message : 'Bilinmeyen hata');
+      setWeatherData(null);
+      setForecastData(null);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [weatherService]);
+  }, []);
 
-  const fetchWeatherByCity = useCallback(async (cityName: string) => {
-    setIsLoading(true);
+  const fetchWeatherByCoords = useCallback(async (lat: number, lon: number) => {
+    setLoading(true);
     setError(null);
-    setSelectedCity(cityName);
     
     try {
-      const weather = await weatherService.getWeatherByCity(cityName);
-      setWeatherData(weather);
+      // Mevcut hava durumu
+      const currentWeather = await getWeatherByCoords(lat, lon);
+      setWeatherData(currentWeather);
+      
+      // 5 günlük tahmin
+      const forecast = await getForecastByCoords(lat, lon);
+      setForecastData(forecast);
+      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Şehir hava durumu alınamadı');
+      setError(err instanceof Error ? err.message : 'Bilinmeyen hata');
+      setWeatherData(null);
+      setForecastData(null);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [weatherService]);
+  }, []);
 
-  // Auto-fetch weather when user location is available
+  // Konum izni isteme
+  const getCurrentLocation = useCallback(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchWeatherByCoords(position.coords.latitude, position.coords.longitude);
+        },
+        (error) => {
+          console.error('Konum alınamadı:', error);
+          setError('Konum izni gerekli');
+        }
+      );
+    } else {
+      setError('Bu tarayıcı konum özelliğini desteklemiyor');
+    }
+  }, [fetchWeatherByCoords]);
+
+  // Seçilen şehir değiştiğinde hava durumunu güncelle
   useEffect(() => {
-    if (userLocation && !selectedCity) {
-      fetchWeatherByLocation(userLocation);
+    if (selectedCity) {
+      fetchWeather(selectedCity);
     }
-  }, [userLocation, fetchWeatherByLocation, selectedCity]);
+  }, [selectedCity, fetchWeather]);
 
-  const getWeatherEmoji = (icon: string): string => {
-    const iconMap: Record<string, string> = {
-      '01d': '☀️', '01n': '🌙',
-      '02d': '⛅', '02n': '☁️',
-      '03d': '☁️', '03n': '☁️',
-      '04d': '☁️', '04n': '☁️',
-      '09d': '🌧️', '09n': '🌧️',
-      '10d': '🌦️', '10n': '🌧️',
-      '11d': '⛈️', '11n': '⛈️',
-      '13d': '❄️', '13n': '❄️',
-      '50d': '🌫️', '50n': '🌫️',
-    };
-    return iconMap[icon] || '🌤️';
+  const getWeatherIcon = (condition: string) => {
+    switch (condition.toLowerCase()) {
+      case 'sunny':
+      case 'clear':
+        return '☀️';
+      case 'cloudy':
+      case 'overcast':
+        return '☁️';
+      case 'partly cloudy':
+        return '⛅';
+      case 'rainy':
+      case 'rain':
+        return '🌧️';
+      case 'snowy':
+      case 'snow':
+        return '❄️';
+      case 'stormy':
+      case 'thunderstorm':
+        return '⛈️';
+      default:
+        return '🌤️';
+    }
   };
 
-  const getTemperatureColor = (temp: number): string => {
-    if (temp >= 35) return 'text-red-600';
-    if (temp >= 30) return 'text-orange-500';
-    if (temp >= 25) return 'text-yellow-500';
-    return 'text-blue-500';
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    
+    if (date.toDateString() === today.toDateString()) {
+      return language === 'tr' ? 'Bugün' : 'Today';
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return language === 'tr' ? 'Yarın' : 'Tomorrow';
+    } else {
+      return language === 'tr' 
+        ? date.toLocaleDateString('tr-TR', { weekday: 'short', month: 'short', day: 'numeric' })
+        : date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-3 text-gray-600 dark:text-gray-300">
+          {t('weather.loading')}
+        </span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+        <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+        <div className="flex gap-2">
+          <button
+            onClick={getCurrentLocation}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            📍 {language === 'tr' ? 'Konumumu Kullan' : 'Use My Location'}
+          </button>
+          {selectedCity && (
+            <button
+              onClick={() => fetchWeather(selectedCity)}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              🔄 {language === 'tr' ? 'Tekrar Dene' : 'Retry'}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (!weatherData) {
+    return (
+      <div className="text-center p-8">
+        <p className="text-gray-500 dark:text-gray-400 mb-4">
+          {language === 'tr' 
+            ? 'Hava durumu görmek için bir şehir seçin veya konumunuzu paylaşın'
+            : 'Select a city or share your location to see weather'}
+        </p>
+        
+        {/* Hızlı Şehir Seçimi */}
+        <div className="flex flex-wrap justify-center gap-2 mb-4">
+          <button
+            onClick={() => fetchWeather('Kuala Lumpur')}
+            className="px-4 py-2 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-800 transition-colors text-sm"
+          >
+            🏨 {language === 'tr' ? 'Otelin Şehri (KL)' : 'Hotel City (KL)'}
+          </button>
+          <button
+            onClick={() => fetchWeather('Jakarta')}
+            className="px-4 py-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-800 transition-colors text-sm"
+          >
+            🏙️ Jakarta
+          </button>
+          <button
+            onClick={() => fetchWeather('Bali')}
+            className="px-4 py-2 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors text-sm"
+          >
+            🏝️ Bali
+          </button>
+        </div>
+        
+        <button
+          onClick={getCurrentLocation}
+          className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center gap-2"
+        >
+          📍 {language === 'tr' ? 'Konumumu Kullan' : 'Use My Location'}
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6 sm:mb-8">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-sky-50 px-4 sm:px-6 py-4 border-b border-blue-100">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-            <span className="text-blue-600 text-xl">🌤️</span>
+    <div className="space-y-6">
+      {/* Mevcut Hava Durumu */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
+            {weatherData.location}
+          </h3>
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {language === 'tr' ? 'Şu an' : 'Now'}
+          </span>
+        </div>
+        
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-4">
+            <span className="text-4xl">
+              {getWeatherIcon(weatherData.condition)}
+            </span>
+            <div>
+              <div className="text-3xl font-bold text-gray-800 dark:text-gray-200">
+                {Math.round(weatherData.temperature)}°C
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                {weatherData.condition}
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-              Hava Durumu
-            </h3>
-            <p className="text-sm text-blue-600">
-              {new Date().toLocaleDateString('tr-TR')}
-            </p>
+          
+          <div className="text-right space-y-1">
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              💧 {weatherData.humidity}%
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-300">
+              💨 {weatherData.windSpeed} km/h
+            </div>
+            {weatherData.feelsLike && (
+              <div className="text-sm text-gray-600 dark:text-gray-300">
+                {language === 'tr' ? 'Hissedilen' : 'Feels like'}: {Math.round(weatherData.feelsLike)}°C
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Hızlı Şehir Değiştirme */}
+        <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
+          <div className="flex flex-wrap justify-center gap-2">
+            <button
+              onClick={() => fetchWeather('Kuala Lumpur')}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                weatherData.location.includes('Kuala Lumpur') 
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800'
+              }`}
+            >
+              🏨 {language === 'tr' ? 'Otelin Şehri (KL)' : 'Hotel City (KL)'}
+            </button>
+            <button
+              onClick={() => fetchWeather('Jakarta')}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                weatherData.location.includes('Jakarta') 
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800'
+              }`}
+            >
+              🏙️ Jakarta
+            </button>
+            <button
+              onClick={() => fetchWeather('Bali')}
+              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                weatherData.location.includes('Bali') 
+                  ? 'bg-purple-500 text-white' 
+                  : 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800'
+              }`}
+            >
+              🏝️ Bali
+            </button>
+            <button
+              onClick={getCurrentLocation}
+              className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-sm transition-colors"
+            >
+              📍 {language === 'tr' ? 'Konumum' : 'My Location'}
+            </button>
           </div>
         </div>
       </div>
 
-      <div className="p-4 sm:p-6">
-        {/* City Selection - Mobile Grid */}
-        <div className="mb-6">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3">
-            {popularCities.map((city) => (
-              <button
-                key={city.name}
-                onClick={() => fetchWeatherByCity(city.name)}
-                disabled={isLoading}
-                className={`flex flex-col items-center p-3 rounded-xl transition-all duration-200 touch-manipulation ${
-                  selectedCity === city.name
-                    ? 'bg-blue-500 text-white shadow-lg transform scale-105'
-                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100 active:bg-gray-200'
-                } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-md'}`}
+      {/* 5 Günlük Tahmin Toggle */}
+      {forecastData && (
+        <div className="text-center">
+          <button
+            onClick={() => setShowForecast(!showForecast)}
+            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors inline-flex items-center gap-2"
+          >
+            📅 {language === 'tr' ? '5 Günlük Tahmin' : '5-Day Forecast'}
+            <span className={`transform transition-transform ${showForecast ? 'rotate-180' : ''}`}>
+              ▼
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* 5 Günlük Tahmin */}
+      {showForecast && forecastData && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">
+            {language === 'tr' ? '5 Günlük Hava Tahmini' : '5-Day Weather Forecast'}
+          </h4>
+          
+          <div className="grid gap-4">
+            {forecastData.daily.map((day, index) => (
+              <div 
+                key={index}
+                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
               >
-                <span className="text-lg mb-1">{city.flag}</span>
-                <span className="text-xs font-medium text-center leading-tight">
-                  {city.name}
-                </span>
-              </button>
+                <div className="flex items-center space-x-4">
+                  <span className="text-2xl">
+                    {getWeatherIcon(day.condition)}
+                  </span>
+                  <div>
+                    <div className="font-medium text-gray-800 dark:text-gray-200">
+                      {formatDate(day.date)}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                      {day.condition}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-6">
+                  <div className="text-right">
+                    <div className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                      {Math.round(day.maxTemp)}°
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {Math.round(day.minTemp)}°
+                    </div>
+                  </div>
+                  
+                  <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1">
+                    <div>💧 {day.humidity}%</div>
+                    {day.precipitation > 0 && (
+                      <div>🌧️ {day.precipitation}mm</div>
+                    )}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
-          
-          {/* User Location Button */}
-          {userLocation && (
-            <button
-              onClick={() => {
-                setSelectedCity('');
-                fetchWeatherByLocation(userLocation);
-              }}
-              disabled={isLoading}
-              className={`w-full flex items-center justify-center p-3 rounded-xl transition-all duration-200 touch-manipulation ${
-                !selectedCity
-                  ? 'bg-green-500 text-white shadow-lg'
-                  : 'bg-green-50 text-green-700 hover:bg-green-100'
-              } disabled:opacity-50`}
-            >
-              <span className="text-lg mr-2">📍</span>
-              <span className="text-sm font-medium">Mevcut Konumum</span>
-            </button>
-          )}
         </div>
-
-        {/* Loading State */}
-        {isLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="flex flex-col items-center space-y-3">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-              <p className="text-sm text-gray-500">Hava durumu yükleniyor...</p>
-            </div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4">
-            <div className="flex items-start space-x-3">
-              <span className="text-red-500 text-lg flex-shrink-0">⚠️</span>
-              <div>
-                <p className="text-red-800 text-sm font-medium">Hata!</p>
-                <p className="text-red-700 text-sm mt-1">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Weather Data - Mobile Optimized */}
-        {weatherData && !isLoading && (
-          <div className="animate-fadeIn space-y-4">
-            {/* Main Weather Card */}
-            <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-4 sm:p-6 text-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex-1">
-                  <h4 className="text-lg sm:text-xl font-bold mb-1">
-                    {weatherData.location}
-                  </h4>
-                  <p className="text-blue-100 text-sm opacity-90 capitalize">
-                    {weatherData.description}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center justify-end mb-1">
-                    <span className="text-2xl sm:text-3xl mr-2">
-                      {getWeatherEmoji(weatherData.icon)}
-                    </span>
-                    <span className="text-3xl sm:text-4xl font-bold">
-                      {weatherData.temperature}°
-                    </span>
-                  </div>
-                  <p className="text-blue-100 text-sm">
-                    Hissedilen {weatherData.feelsLike}°C
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Weather Details Grid - Mobile First */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 text-center">
-                <div className="text-blue-600 text-lg mb-1">💧</div>
-                <div className="text-blue-800 text-xs font-medium">Nem</div>
-                <div className="text-blue-700 text-sm font-semibold">{weatherData.humidity}%</div>
-              </div>
-
-              <div className="bg-green-50 border border-green-100 rounded-xl p-3 text-center">
-                <div className="text-green-600 text-lg mb-1">💨</div>
-                <div className="text-green-800 text-xs font-medium">Rüzgar</div>
-                <div className="text-green-700 text-sm font-semibold">{Math.round(weatherData.windSpeed)} km/h</div>
-              </div>
-
-              <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 text-center">
-                <div className="text-orange-600 text-lg mb-1">🌡️</div>
-                <div className="text-orange-800 text-xs font-medium">Basınç</div>
-                <div className="text-orange-700 text-sm font-semibold">{weatherData.pressure} hPa</div>
-              </div>
-
-              <div className="bg-purple-50 border border-purple-100 rounded-xl p-3 text-center">
-                <div className="text-purple-600 text-lg mb-1">�</div>
-                <div className="text-purple-800 text-xs font-medium">Durum</div>
-                <div className="text-purple-700 text-sm font-semibold">İyi</div>
-              </div>
-            </div>
-
-            {/* Travel Tips - Mobile Optimized */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-              <div className="flex items-start space-x-3">
-                <span className="text-yellow-600 text-lg flex-shrink-0 mt-0.5">💡</span>
-                <div>
-                  <h5 className="font-medium text-yellow-800 mb-1">Seyahat Önerisi</h5>
-                  <p className="text-yellow-700 text-sm leading-relaxed">
-                    {weatherData.temperature > 32 
-                      ? 'Sıcak hava! Bol su için ve hafif giysiler tercih edin.'
-                      : weatherData.humidity > 80
-                      ? 'Yüksek nem var. İç mekân aktiviteleri düşünebilirsiniz.'
-                      : weatherData.windSpeed > 20
-                      ? 'Rüzgarlı hava. Deniz aktiviteleri için dikkatli olun.'
-                      : 'Seyahat için ideal hava koşulları! 🌟'
-                    }
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!weatherData && !isLoading && !error && (
-          <div className="text-center py-8">
-            <span className="text-4xl mb-4 block">�️</span>
-            <h4 className="text-lg font-semibold text-gray-800 mb-2">
-              Hava Durumunu Görüntüle
-            </h4>
-            <p className="text-gray-600 text-sm">
-              Şehir seçin veya mevcut konumunuzu kullanın
-            </p>
-          </div>
-        )}
+      )}
+      
+      {/* Güncelleme Butonu */}
+      <div className="text-center">
+        <button
+          onClick={() => selectedCity ? fetchWeather(selectedCity) : getCurrentLocation()}
+          className="px-4 py-2 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors inline-flex items-center gap-2"
+        >
+          🔄 {language === 'tr' ? 'Güncelle' : 'Refresh'}
+        </button>
       </div>
     </div>
   );
 };
+
+export default WeatherComponent;

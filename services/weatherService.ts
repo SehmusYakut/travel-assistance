@@ -1,13 +1,32 @@
-// Weather Service using OpenWeatherMap API
+// Weather Service using Open-Meteo API
 export interface WeatherData {
   location: string;
   temperature: number;
   description: string;
+  condition: string;
   humidity: number;
   windSpeed: number;
   icon: string;
   feelsLike: number;
   pressure: number;
+}
+
+export interface DailyForecast {
+  date: string;
+  dayName: string;
+  maxTemp: number;
+  minTemp: number;
+  description: string;
+  condition: string;
+  icon: string;
+  humidity: number;
+  windSpeed: number;
+  precipitation: number;
+}
+
+export interface ForecastData {
+  current: WeatherData;
+  daily: DailyForecast[];
 }
 
 export class WeatherService {
@@ -51,6 +70,7 @@ export class WeatherService {
         location: await this.getLocationName(lat, lng),
         temperature: Math.round(current.temperature_2m),
         description: this.getWeatherDescription(current.weather_code),
+        condition: this.getWeatherDescription(current.weather_code),
         humidity: current.relative_humidity_2m,
         windSpeed: Math.round(current.wind_speed_10m * 3.6), // km/h
         icon: this.getWeatherIcon(current.weather_code),
@@ -60,6 +80,106 @@ export class WeatherService {
       
     } catch (error) {
       console.error('Weather API error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 5 günlük hava tahmini getir
+   */
+  async getForecastByCoords(lat: number, lng: number): Promise<ForecastData> {
+    try {
+      // Open-Meteo API - günlük tahmin ile birlikte
+      const url = `${this.BASE_URL}?latitude=${lat}&longitude=${lng}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,surface_pressure&daily=temperature_2m_max,temperature_2m_min,weather_code,relative_humidity_2m_mean,wind_speed_10m_max&timezone=auto&forecast_days=6`;
+      
+      console.log('Forecast API request:', { lat, lng, url });
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Forecast API failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      console.log('Forecast API response:', data);
+      
+      const current = data.current;
+      const daily = data.daily;
+      
+      // Güncel hava durumu
+      const currentWeather: WeatherData = {
+        location: await this.getLocationName(lat, lng),
+        temperature: Math.round(current.temperature_2m),
+        description: this.getWeatherDescription(current.weather_code),
+        condition: this.getWeatherDescription(current.weather_code),
+        humidity: current.relative_humidity_2m,
+        windSpeed: Math.round(current.wind_speed_10m * 3.6), // km/h
+        icon: this.getWeatherIcon(current.weather_code),
+        feelsLike: Math.round(current.temperature_2m),
+        pressure: Math.round(current.surface_pressure),
+      };
+
+      // 5 günlük tahmin (bugün hariç)
+      const dailyForecasts: DailyForecast[] = daily.time.slice(1, 6).map((date: string, index: number) => {
+        const dateObj = new Date(date);
+        const dayNames = ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'];
+        const dayName = index === 0 ? 'Yarın' : dayNames[dateObj.getDay()];
+        
+        return {
+          date: date,
+          dayName: dayName,
+          maxTemp: Math.round(daily.temperature_2m_max[index + 1]),
+          minTemp: Math.round(daily.temperature_2m_min[index + 1]),
+          description: this.getWeatherDescription(daily.weather_code[index + 1]),
+          condition: this.getWeatherDescription(daily.weather_code[index + 1]),
+          icon: this.getWeatherIcon(daily.weather_code[index + 1]),
+          humidity: Math.round(daily.relative_humidity_2m_mean[index + 1]),
+          windSpeed: Math.round(daily.wind_speed_10m_max[index + 1] * 3.6), // km/h
+          precipitation: 0, // Open-Meteo günlük yağış verisini ekleyebiliriz
+        };
+      });
+
+      return {
+        current: currentWeather,
+        daily: dailyForecasts
+      };
+      
+    } catch (error) {
+      console.error('Forecast API error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Şehir adına göre 5 günlük hava tahmini getir
+   */
+  async getForecastByCity(cityName: string): Promise<ForecastData> {
+    try {
+      // Önce şehrin koordinatlarını alalım
+      const geocodeUrl = `${this.GEOCODING_URL}?name=${encodeURIComponent(cityName)}&count=1&language=tr&format=json`;
+      
+      const geocodeResponse = await fetch(geocodeUrl);
+      
+      if (!geocodeResponse.ok) {
+        throw new Error(`Geocoding API failed: ${geocodeResponse.status}`);
+      }
+
+      const geocodeData = await geocodeResponse.json();
+      
+      if (!geocodeData.results || geocodeData.results.length === 0) {
+        throw new Error(`City not found: ${cityName}`);
+      }
+
+      const location = geocodeData.results[0];
+      const lat = location.latitude;
+      const lng = location.longitude;
+      
+      // Şimdi 5 günlük tahmin bilgisini alalım
+      return await this.getForecastByCoords(lat, lng);
+      
+    } catch (error) {
+      console.error('Forecast API error for city:', error);
       throw error;
     }
   }
@@ -198,3 +318,19 @@ export class WeatherService {
     return '02d'; // default partly cloudy
   }
 }
+
+// Service singleton instance
+const weatherService = WeatherService.getInstance();
+
+// Export convenience functions
+export const getWeatherByCoords = (lat: number, lng: number): Promise<WeatherData> => 
+  weatherService.getWeatherByCoords(lat, lng);
+
+export const getWeatherByCity = (cityName: string): Promise<WeatherData> => 
+  weatherService.getWeatherByCity(cityName);
+
+export const getForecastByCoords = (lat: number, lng: number): Promise<ForecastData> => 
+  weatherService.getForecastByCoords(lat, lng);
+
+export const getForecastByCity = (cityName: string): Promise<ForecastData> => 
+  weatherService.getForecastByCity(cityName);

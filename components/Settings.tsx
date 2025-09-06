@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useApp, Language, Theme } from '../contexts/AppContext';
+import { useAppContext, Language, Theme } from '../contexts/AppContext';
 
 export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
   isOpen,
   onClose,
 }) => {
-  const { language, theme, setLanguage, setTheme, t } = useApp();
+  const { language, theme, setLanguage, setTheme, t } = useAppContext();
   const [isAnimating, setIsAnimating] = useState(false);
 
   if (!isOpen) return null;
@@ -142,7 +142,7 @@ export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> =
 
 export const SettingsButton: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { theme } = useApp();
+  const { theme } = useAppContext();
 
   return (
     <>

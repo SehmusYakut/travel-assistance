@@ -2,14 +2,14 @@
 
 import React, { useState } from 'react';
 import { CountryData } from '../models/types';
-import { useApp } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 
 interface GuideContentProps {
   guideContent: CountryData;
 }
 
 export const GuideContent: React.FC<GuideContentProps> = ({ guideContent }) => {
-  const { t } = useApp();
+  const { t } = useAppContext();
   const [activeTab, setActiveTab] = useState<string>('attractions');
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
 

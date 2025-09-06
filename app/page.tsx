@@ -3,18 +3,18 @@
 import React, { useState } from 'react';
 import { PlaceType } from '../models/types';
 import { useSimpleMapViewModel } from '../viewmodels/useSimpleMapViewModel';
-import { useApp } from '../contexts/AppContext';
+import { useAppContext } from '../contexts/AppContext';
 import { ActionButton } from '../components/ActionButton';
 import { MapComponent } from '../components/MapComponent';
 import { PlacesList } from '../components/PlacesList';
 import { GuideContent } from '../components/GuideContent';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { RouteComponent } from '../components/RouteComponent';
-import { WeatherComponent } from '../components/WeatherComponent';
+import WeatherComponent from '../components/WeatherComponent';
 import { SettingsModal } from '../components/Settings';
 
 export default function Home() {
-  const { t, language, theme } = useApp();
+  const { t, language, theme } = useAppContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const {
     mapState,
@@ -116,7 +116,7 @@ export default function Home() {
 
             {/* Weather Information - Compact on mobile */}
             <div className="order-2">
-              <WeatherComponent userLocation={mapState.userLocation} />
+              <WeatherComponent />
             </div>
 
             {/* Map Section - Show after guides on mobile */}

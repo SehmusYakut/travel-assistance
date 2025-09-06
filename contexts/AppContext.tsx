@@ -42,6 +42,8 @@ const translations = {
     'weather.pressure': 'Basınç',
     'weather.visibility': 'Görüş',
     'weather.feelsLike': 'Hissedilen',
+    'weather.forecast.title': '5 Günlük Tahmin',
+    'weather.forecast.button': '5 Günlük Tahmin',
     'weather.tips': 'Seyahat Önerisi',
     'weather.tip.hot': 'Sıcak hava! Bol su için ve hafif giysiler tercih edin.',
     'weather.tip.humid': 'Yüksek nem var. İç mekân aktiviteleri düşünebilirsiniz.',
@@ -147,6 +149,8 @@ const translations = {
     'weather.pressure': 'Pressure',
     'weather.visibility': 'Visibility',
     'weather.feelsLike': 'Feels like',
+    'weather.forecast.title': '5-Day Forecast',
+    'weather.forecast.button': '5-Day Forecast',
     'weather.tips': 'Travel Tip',
     'weather.tip.hot': 'Hot weather! Drink plenty of water and wear light clothing.',
     'weather.tip.humid': 'High humidity. Consider indoor activities.',
@@ -292,4 +296,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+};
+
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (context === undefined) {
+    throw new Error('useAppContext must be used within an AppProvider');
+  }
+  return context;
 };
