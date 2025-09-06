@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AppProvider } from '../contexts/AppContext'
+import { SettingsButton } from '../components/Settings'
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,9 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gezgin Rehberi - Seyahat Asistanı",
-  description: "Malezya ve Endonezya için akıllı seyahat rehberi",
-};
+  title: 'Travel Assistant - Gezgin Rehberi',
+  description: 'Your personal travel assistant for exploring new destinations',
+}
 
 export default function RootLayout({
   children,
@@ -33,7 +35,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <AppProvider>
+          {children}
+          <SettingsButton />
+        </AppProvider>
       </body>
     </html>
   );

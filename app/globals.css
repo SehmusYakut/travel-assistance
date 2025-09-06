@@ -3,26 +3,58 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #3b82f6;
+}
+
+.dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --primary: #60a5fa;
+  --primary-foreground: #0f172a;
+  --secondary: #1e293b;
+  --secondary-foreground: #f1f5f9;
+  --accent: #334155;
+  --accent-foreground: #f1f5f9;
+  --border: #334155;
+  --input: #334155;
+  --ring: #60a5fa;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
   /* Mobile optimization */
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -30,6 +62,68 @@ body {
   -ms-user-select: none;
   user-select: none;
   touch-action: manipulation;
+}
+
+/* Dark theme specific styles */
+.dark {
+  color-scheme: dark;
+}
+
+.dark .bg-white {
+  background-color: var(--card);
+}
+
+.dark .text-gray-900 {
+  color: var(--card-foreground);
+}
+
+.dark .text-gray-800 {
+  color: #e2e8f0;
+}
+
+.dark .text-gray-700 {
+  color: #cbd5e1;
+}
+
+.dark .text-gray-600 {
+  color: #94a3b8;
+}
+
+.dark .text-gray-500 {
+  color: #64748b;
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--secondary);
+}
+
+.dark .bg-gray-100 {
+  background-color: var(--accent);
+}
+
+.dark .border-gray-100 {
+  border-color: var(--border);
+}
+
+.dark .border-gray-200 {
+  border-color: var(--border);
+}
+
+/* Dark theme gradients */
+.dark .from-slate-50 {
+  --tw-gradient-from: #1e293b;
+}
+
+.dark .to-blue-50 {
+  --tw-gradient-to: #1e3a8a;
+}
+
+.dark .from-blue-50 {
+  --tw-gradient-from: #1e3a8a;
+}
+
+.dark .to-sky-50 {
+  --tw-gradient-to: #0c4a6e;
 }
 
 /* Mobile touch improvements */
@@ -103,17 +197,17 @@ a,
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--secondary);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  background: var(--primary);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: var(--ring);
 }
 
 /* Mobile-specific styles */
@@ -147,12 +241,43 @@ a,
 
 /* Focus styles for better accessibility */
 *:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--ring);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 /* Loading states */
+/* Animations */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Text utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .loading-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -185,5 +310,13 @@ a,
   .card-mobile:active {
     transform: scale(0.98);
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .dark .card-mobile {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  }
+  
+  .dark .card-mobile:active {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.2);
   }
 }

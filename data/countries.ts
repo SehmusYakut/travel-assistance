@@ -6,7 +6,7 @@ export const malaysiaData = {
       name: "Petronas Kuleleri", 
       city: "Kuala Lumpur", 
       description: "İkonik ikiz kuleler, modern Malezya'nın simgesi. 88 katlı bu gökdelenler dünyada en yüksek ikiz kuleler.",
-      coordinates: { lat: 3.1579, lng: 101.7114 },
+      location: { lat: 3.1579, lng: 101.7114 },
       visitTime: "2-3 saat",
       entryFee: "RM 85 (Skybridge + Observation Deck)",
       bestTime: "Gündoğumu ve gün batımında",
@@ -16,7 +16,7 @@ export const malaysiaData = {
       name: "Batu Mağaraları", 
       city: "Gombak", 
       description: "Hindu tapınağına ev sahipliği yapan kireçtaşı tepesi. 272 basamaklı merdiven ve büyüleyici mağara sistemi.",
-      coordinates: { lat: 3.2379, lng: 101.6831 },
+      location: { lat: 3.2379, lng: 101.6831 },
       visitTime: "2-4 saat",
       entryFee: "Ücretsiz",
       bestTime: "Sabah erken saatler (daha az kalabalık)",
@@ -26,7 +26,7 @@ export const malaysiaData = {
       name: "KLCC Suria Mall & Aquaria",
       city: "Kuala Lumpur",
       description: "Petronas altında lüks AVM ve okyanus akvaryumu. 5000+ deniz canlısı.",
-      coordinates: { lat: 3.1578, lng: 101.7123 },
+      location: { lat: 3.1578, lng: 101.7123 },
       visitTime: "3-5 saat",
       entryFee: "Aquaria: RM 69 (Yetişkin)",
       bestTime: "Hafta içi öğleden sonra",
@@ -36,7 +36,7 @@ export const malaysiaData = {
       name: "Langkawi Adası", 
       city: "Kedah", 
       description: "Duty-free ada cennet. Teleferik, orman, plajlar ve tax-free alışveriş.",
-      coordinates: { lat: 6.3521, lng: 99.8142 },
+      location: { lat: 6.3521, lng: 99.8142 },
       visitTime: "3-5 gün",
       entryFee: "Ulaşım hariç ücretsiz",
       bestTime: "Aralık-Mart (kuru sezon)",
@@ -46,7 +46,7 @@ export const malaysiaData = {
       name: "George Town", 
       city: "Penang", 
       description: "UNESCO Dünya Mirası. Street art, kolonyal binalar ve lezzet cenneti.",
-      coordinates: { lat: 5.4141, lng: 100.3288 },
+      location: { lat: 5.4141, lng: 100.3288 },
       visitTime: "2-3 gün",
       entryFee: "Ücretsiz (müzeler hariç)",
       bestTime: "Ekim-Mart",
@@ -56,7 +56,7 @@ export const malaysiaData = {
       name: "Malacca (Melaka)", 
       city: "Malacca", 
       description: "Tarihi liman şehri. Hollanda mimarisi, Jonker Street gece pazarı.",
-      coordinates: { lat: 2.1896, lng: 102.2501 },
+      location: { lat: 2.1896, lng: 102.2501 },
       visitTime: "1-2 gün",
       entryFee: "Çoğu yer ücretsiz",
       bestTime: "Yıl boyunca",
@@ -66,7 +66,7 @@ export const malaysiaData = {
       name: "Genting Highlands",
       city: "Pahang",
       description: "Bulutlar üzerindeki şehir. Casino, tema parkları ve serin hava.",
-      coordinates: { lat: 3.4227, lng: 101.7944 },
+      location: { lat: 3.4227, lng: 101.7944 },
       visitTime: "1-2 gün",
       entryFee: "Aktivitelere göre değişir",
       bestTime: "Yıl boyunca (hep serin)",
@@ -76,7 +76,7 @@ export const malaysiaData = {
       name: "Cameron Highlands", 
       city: "Pahang", 
       description: "Çay tarlaları, çilek çiftlikleri ve serin iklim. BOH çay fabrikası.",
-      coordinates: { lat: 4.4702, lng: 101.3769 },
+      location: { lat: 4.4702, lng: 101.3769 },
       visitTime: "2-3 gün",
       entryFee: "Tur fiyatları RM 30-100",
       bestTime: "Mart-Eylül (kuru dönem)",
@@ -86,7 +86,7 @@ export const malaysiaData = {
       name: "Perhentian Adaları", 
       city: "Terengganu", 
       description: "Kristal berrak deniz, dalış ve şnorkelle yüzme cennet. Kaplumbağa gözlemi.",
-      coordinates: { lat: 5.9167, lng: 102.7333 },
+      location: { lat: 5.9167, lng: 102.7333 },
       visitTime: "3-5 gün",
       entryFee: "Koruma ücreti RM 5",
       bestTime: "Mart-Eylül (muson dışı)",
@@ -96,7 +96,7 @@ export const malaysiaData = {
       name: "Kuala Lumpur Bird Park",
       city: "Kuala Lumpur",
       description: "Dünyanın en büyük açık kuş parkı. 3000+ kuş, 200+ tür.",
-      coordinates: { lat: 3.1412, lng: 101.6865 },
+      location: { lat: 3.1412, lng: 101.6865 },
       visitTime: "2-3 saat",
       entryFee: "RM 67 (Yetişkin)",
       bestTime: "Sabah 9-11 (kuşlar daha aktif)",
@@ -106,7 +106,7 @@ export const malaysiaData = {
       name: "Putrajaya",
       city: "Putrajaya",
       description: "Idari başkent. Putra Camii, gül bahçesi ve göl turları.",
-      coordinates: { lat: 2.9264, lng: 101.6964 },
+      location: { lat: 2.9264, lng: 101.6964 },
       visitTime: "Yarım gün",
       entryFee: "Çoğu yer ücretsiz",
       bestTime: "Akşam üstü (aydınlatma)",
@@ -255,61 +255,61 @@ export const indonesiaData = {
       name: "Bali Adası - Ubud", 
       city: "Bali", 
       description: "Hindu tapınakları, pirinç tarlaları ve spa merkezleri. Yoga ve wellness turizmi merkezi.",
-      coordinates: { lat: -8.5069, lng: 115.2625 }
+      location: { lat: -8.5069, lng: 115.2625 }
     },
     { 
       name: "Borobudur Tapınağı", 
       city: "Yogyakarta", 
       description: "Dünyanın en büyük Budist tapınağı. 8. yüzyıldan kalma muhteşem taş eseri. UNESCO Dünya Mirası.",
-      coordinates: { lat: -7.6079, lng: 110.2038 }
+      location: { lat: -7.6079, lng: 110.2038 }
     },
     { 
       name: "Komodo Ulusal Parkı", 
       city: "Nusa Tenggara Timur", 
       description: "Dev Komodo ejderlerinin doğal yaşam alanı. Eşsiz flora ve fauna. Dalış cennetleri.",
-      coordinates: { lat: -8.5874, lng: 119.4897 }
+      location: { lat: -8.5874, lng: 119.4897 }
     },
     { 
       name: "Jakarta - Monas", 
       city: "Jakarta", 
       description: "Ulusal Anıt (Monas) ve çevresindeki tarihi bölge. Modern şehrin kalbindeki simgesel yapı.",
-      coordinates: { lat: -6.1754, lng: 106.8272 }
+      location: { lat: -6.1754, lng: 106.8272 }
     },
     {
       name: "Yogyakarta Sultanlığı",
       city: "Yogyakarta",
       description: "Geleneksel Java kültürü ve sarayı. Batik sanatının merkezi. Malioboro Caddesi alışverişi.",
-      coordinates: { lat: -7.8053, lng: 110.3642 }
+      location: { lat: -7.8053, lng: 110.3642 }
     },
     {
       name: "Toba Gölü",
       city: "Sumatra",
       description: "Volkanik krater gölü. Dünyanın en büyük kaldera gölü ve Samosir adası kültürü.",
-      coordinates: { lat: 2.6845, lng: 98.8756 }
+      location: { lat: 2.6845, lng: 98.8756 }
     },
     {
       name: "Bromo Tengger Semeru Ulusal Parkı",
       city: "East Java",
       description: "Aktif volkan Bromo'nun muhteşem manzarası. Gündoğumu turları ve trekking.",
-      coordinates: { lat: -7.9425, lng: 112.9530 }
+      location: { lat: -7.9425, lng: 112.9530 }
     },
     {
       name: "Kuta Beach & Seminyak",
       city: "Bali",
       description: "Sörf merkezi ve gece hayatı. Lüks resortlar, beach club'lar ve alışveriş.",
-      coordinates: { lat: -8.7183, lng: 115.1686 }
+      location: { lat: -8.7183, lng: 115.1686 }
     },
     {
       name: "Gili Adaları",
       city: "Lombok",
       description: "3 küçük ada: Gili Trawangan, Gili Meno, Gili Air. Dalış, snorkeling ve plaj keyfi.",
-      coordinates: { lat: -8.3484, lng: 116.0417 }
+      location: { lat: -8.3484, lng: 116.0417 }
     },
     {
       name: "Bandung Paris van Java",
       city: "West Java",
       description: "Serin dağ iklimi, outlet alışveriş merkezleri ve kolonyal dönem mimarisi.",
-      coordinates: { lat: -6.9147, lng: 107.6098 }
+      location: { lat: -6.9147, lng: 107.6098 }
     }
   ],
   transportation: [
