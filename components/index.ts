@@ -7,3 +7,5 @@ export { RouteComponent } from './RouteComponent';
 export { default as WeatherComponent } from './WeatherComponent';
 export { BottomNavigation } from './BottomNavigation';
 export { EmergencyServices } from './EmergencyServices';
+export { CurrencyConverter } from './CurrencyConverter';
+export { Translator } from './Translator';

@@ -6,9 +6,11 @@ import { useAppContext } from '../contexts/AppContext';
 
 interface GuideContentProps {
   guideContent: CountryData;
+  countryKey?: string;
+  onClose?: () => void;
 }
 
-export const GuideContent: React.FC<GuideContentProps> = ({ guideContent }) => {
+export const GuideContent: React.FC<GuideContentProps> = ({ guideContent, countryKey, onClose }) => {
   const { t } = useAppContext();
   const [activeTab, setActiveTab] = useState<string>('attractions');
   const [expandedCards, setExpandedCards] = useState<Set<number>>(new Set());
@@ -225,6 +227,23 @@ export const GuideContent: React.FC<GuideContentProps> = ({ guideContent }) => {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+      {/* Header with Close Button */}
+      {onClose && (
+        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-600">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <span>{countryKey === 'malaysia' ? '🇲🇾' : '🇮🇩'}</span>
+            {countryKey === 'malaysia' ? 'Malezya' : 'Endonezya'} Rehberi
+          </h2>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title="Kapat"
+          >
+            <span className="text-xl">✕</span>
+          </button>
+        </div>
+      )}
+      
       <div className="p-4 sm:p-6">
         {/* Mobile Tab Navigation */}
         <div className="block sm:hidden mb-6">

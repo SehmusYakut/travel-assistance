@@ -36,20 +36,6 @@ export const BottomNavigation = ({
       activeIcon: '🚊',
       label: t('button.transport.short'),
       action: 'transport'
-    },
-    {
-      id: 'malaysia',
-      icon: '🇲🇾',
-      activeIcon: '🇲🇾',
-      label: t('button.malaysia.short'),
-      action: 'malaysia'
-    },
-    {
-      id: 'indonesia',
-      icon: '🇮🇩',
-      activeIcon: '🇮🇩',
-      label: t('button.indonesia.short'),
-      action: 'indonesia'
     }
   ];
 
@@ -67,9 +53,7 @@ export const BottomNavigation = ({
             <div className="flex items-center justify-around max-w-md mx-auto">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.action || 
-                  (tab.action === 'findLocation' && activeTab === 'map') ||
-                  (tab.action === 'malaysia' && activeTab === 'guide') ||
-                  (tab.action === 'indonesia' && activeTab === 'guide');
+                  (tab.action === 'findLocation' && activeTab === 'map');
                 
                 return (
                   <button

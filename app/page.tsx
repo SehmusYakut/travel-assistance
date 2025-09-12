@@ -14,9 +14,11 @@ import WeatherComponent from '../components/WeatherComponent';
 import { SettingsModal } from '../components/Settings';
 import { BottomNavigation } from '../components/BottomNavigation';
 import { EmergencyServices } from '../components/EmergencyServices';
+import { CurrencyConverter } from '../components/CurrencyConverter';
+import { Translator } from '../components/Translator';
 
 export default function Home() {
-  const { t, language, theme } = useAppContext();
+  const { t, language } = useAppContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showEmergency, setShowEmergency] = useState(false);
   const {
@@ -26,7 +28,12 @@ export default function Home() {
     findCurrentLocation,
     searchNearbyPlaces,
     showCountryGuide,
+    clearGuide,
   } = useSimpleMapViewModel();
+
+  // Modal states
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
+  const [isTranslatorOpen, setIsTranslatorOpen] = useState(false);
 
   // Handle bottom navigation
   const handleBottomNavAction = useCallback((action: string) => {
@@ -45,14 +52,8 @@ export default function Home() {
       case 'transport':
         searchNearbyPlaces('transit_station');
         break;
-      case 'malaysia':
-        showCountryGuide('malaysia');
-        break;
-      case 'indonesia':
-        showCountryGuide('indonesia');
-        break;
     }
-  }, [findCurrentLocation, searchNearbyPlaces, showCountryGuide]);
+  }, [findCurrentLocation, searchNearbyPlaces]);
 
   return (
     <div 
@@ -63,13 +64,49 @@ export default function Home() {
         {/* Header */}
         <header className="text-center mb-6 sm:mb-8 lg:mb-10 relative">
           {/* Settings Button */}
-          <button
-            onClick={() => setIsSettingsOpen(true)}
-            className="absolute top-0 right-0 p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-            title={t('settings.title')}
-          >
-            <span className="text-lg sm:text-xl">⚙️</span>
-          </button>
+          {/* Utility Buttons */}
+          <div className="absolute top-0 left-0 right-0 flex justify-between items-center px-2 sm:px-4">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsCurrencyOpen(true)}
+                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                title="Döviz Çevirici"
+              >
+                <span className="text-lg sm:text-xl">💰</span>
+              </button>
+              <button
+                onClick={() => setIsTranslatorOpen(true)}
+                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                title="Çevirmen"
+              >
+                <span className="text-lg sm:text-xl">🗣️</span>
+              </button>
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                onClick={() => showCountryGuide('malaysia')}
+                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                title="Malezya Rehberi"
+              >
+                <span className="text-lg sm:text-xl">🇲🇾</span>
+              </button>
+              <button
+                onClick={() => showCountryGuide('indonesia')}
+                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                title="Endonezya Rehberi"
+              >
+                <span className="text-lg sm:text-xl">🇮🇩</span>
+              </button>
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                title={t('settings.title')}
+              >
+                <span className="text-lg sm:text-xl">⚙️</span>
+              </button>
+            </div>
+          </div>
           
           <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white tracking-tight mb-3 sm:mb-4">
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
@@ -115,26 +152,6 @@ export default function Home() {
               <span className="hidden sm:inline">{t('button.transport')}</span>
               <span className="sm:hidden text-xs font-medium">{t('button.transport.short')}</span>
             </ActionButton>
-            
-            <ActionButton
-              onClick={() => showCountryGuide('malaysia')}
-              variant="danger"
-              disabled={appState.status === 'loading'}
-            >
-              <span className="text-lg sm:text-xl">🇲🇾</span>
-              <span className="hidden sm:inline">{t('button.malaysia')}</span>
-              <span className="sm:hidden text-xs font-medium">{t('button.malaysia.short')}</span>
-            </ActionButton>
-            
-            <ActionButton
-              onClick={() => showCountryGuide('indonesia')}
-              variant="secondary"
-              disabled={appState.status === 'loading'}
-            >
-              <span className="text-lg sm:text-xl">🇮🇩</span>
-              <span className="hidden sm:inline">{t('button.indonesia')}</span>
-              <span className="sm:hidden text-xs font-medium">{t('button.indonesia.short')}</span>
-            </ActionButton>
           </div>
 
           {/* Content Sections */}
@@ -149,7 +166,11 @@ export default function Home() {
             {/* Guide Content - Show first on mobile when active */}
             {appState.activeTab === 'guide' && appState.guideContent && (
               <div className="order-1">
-                <GuideContent guideContent={appState.guideContent} />
+                <GuideContent 
+                  guideContent={appState.guideContent} 
+                  countryKey={appState.activeCountry || undefined}
+                  onClose={clearGuide}
+                />
               </div>
             )}
 
@@ -262,6 +283,46 @@ export default function Home() {
           {showEmergency ? '✕' : '🆘'}
         </span>
       </button>
+
+      {/* Currency Converter Modal */}
+      {isCurrencyOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-600">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Döviz Çevirici 💰</h2>
+              <button
+                onClick={() => setIsCurrencyOpen(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <span className="text-xl">✕</span>
+              </button>
+            </div>
+            <div className="p-4">
+              <CurrencyConverter isOpen={true} onClose={() => setIsCurrencyOpen(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Translator Modal */}
+      {isTranslatorOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-slate-600">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Çevirmen 🗣️</h2>
+              <button
+                onClick={() => setIsTranslatorOpen(false)}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <span className="text-xl">✕</span>
+              </button>
+            </div>
+            <div className="p-4">
+              <Translator isOpen={true} onClose={() => setIsTranslatorOpen(false)} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Navigation - Mobile Only */}
       <BottomNavigation

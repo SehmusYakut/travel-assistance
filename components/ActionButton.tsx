@@ -1,8 +1,10 @@
 'use client';
 
+import React from 'react';
+
 interface ActionButtonProps {
   onClick: () => void;
-  children: any;
+  children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger';
   disabled?: boolean;
   className?: string;

@@ -33,7 +33,7 @@ export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading, searc
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-3"></div>
         <p className="text-blue-600 font-medium">{getLoadingMessage()}</p>
         <p className="text-sm text-gray-500 mt-2">
-          Gerçek Google Places API'den veri çekiliyor...
+          Google Places API&apos;den veri çekiliyor...
         </p>
       </div>
     );

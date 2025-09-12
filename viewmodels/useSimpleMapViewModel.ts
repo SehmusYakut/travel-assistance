@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Location, Place } from '../models/types';
+import { Location, Place, CountryData } from '../models/types';
 import { GoogleMapsService } from '../services/mapService';
 import { guideData } from '../data/countries';
 
@@ -18,7 +18,8 @@ interface AppState {
   status: 'idle' | 'loading' | 'success' | 'error';
   errorMessage: string;
   activeTab: 'map' | 'guide';
-  guideContent: any | null; // Will be typed as the guide data structure
+  guideContent: CountryData | null;
+  activeCountry: string | null;
 }
 
 export const useSimpleMapViewModel = () => {
@@ -34,7 +35,8 @@ export const useSimpleMapViewModel = () => {
     status: 'idle',
     errorMessage: '',
     activeTab: 'map',
-    guideContent: null
+    guideContent: null,
+    activeCountry: null
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -75,7 +77,7 @@ export const useSimpleMapViewModel = () => {
 
         setAppState(prev => ({ ...prev, status: 'success' }));
       },
-      (error) => {
+      (_) => {
         setAppState(prev => ({
           ...prev,
           status: 'error',
@@ -125,11 +127,21 @@ export const useSimpleMapViewModel = () => {
       ...prev,
       activeTab: 'guide',
       guideContent: countryData,
+      activeCountry: country,
       status: 'idle',
       errorMessage: ''
     }));
 
     setMapState(prev => ({ ...prev, places: [] }));
+  }, []);
+
+  const clearGuide = useCallback(() => {
+    setAppState(prev => ({
+      ...prev,
+      activeTab: 'map',
+      guideContent: null,
+      activeCountry: null
+    }));
   }, []);
 
   return {
@@ -138,6 +150,7 @@ export const useSimpleMapViewModel = () => {
     handleMapLoad,
     findCurrentLocation,
     searchNearbyPlaces,
-    showCountryGuide
+    showCountryGuide,
+    clearGuide
   };
 };
