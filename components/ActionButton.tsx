@@ -1,10 +1,8 @@
 'use client';
 
-import React from 'react';
-
 interface ActionButtonProps {
   onClick: () => void;
-  children: React.ReactNode;
+  children: any;
   variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger';
   disabled?: boolean;
   className?: string;
@@ -18,13 +16,13 @@ const variantClasses = {
   danger: 'bg-red-600 hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600 text-white shadow-red-100 dark:shadow-red-900/50 border-0',
 };
 
-export const ActionButton: React.FC<ActionButtonProps> = ({
+export const ActionButton = ({
   onClick,
   children,
   variant = 'primary',
   disabled = false,
   className = '',
-}) => {
+}: ActionButtonProps) => {
   return (
     <button
       onClick={onClick}

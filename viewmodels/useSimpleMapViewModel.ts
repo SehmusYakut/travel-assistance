@@ -52,7 +52,7 @@ export const useSimpleMapViewModel = () => {
       setAppState(prev => ({
         ...prev,
         status: 'error',
-        errorMessage: 'Geolokasyon desteklenmiyor'
+        errorMessage: 'Bu cihaz konum bulamıyor 😔'
       }));
       return;
     }
@@ -79,7 +79,7 @@ export const useSimpleMapViewModel = () => {
         setAppState(prev => ({
           ...prev,
           status: 'error',
-          errorMessage: 'Lokasyon alınamadı: ' + error.message
+          errorMessage: 'Konum bulunamadı, tekrar deneyelim? 🔍'
         }));
       }
     );
@@ -91,7 +91,7 @@ export const useSimpleMapViewModel = () => {
       setAppState(prev => ({
         ...prev,
         status: 'error',
-        errorMessage: 'Harita henüz yüklenmedi'
+        errorMessage: 'Harita yükleniyor, biraz bekle 🗺️'
       }));
       return;
     }
@@ -112,7 +112,7 @@ export const useSimpleMapViewModel = () => {
       setAppState(prev => ({
         ...prev,
         status: 'error',
-        errorMessage: error instanceof Error ? error.message : 'Arama başarısız'
+        errorMessage: error instanceof Error ? error.message : 'Bulamadık ama başka yer deneyelim! 🔍'
       }));
     }
   }, [map, mapState.center]);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { PlaceType } from '../models/types';
 import { useSimpleMapViewModel } from '../viewmodels/useSimpleMapViewModel';
 import { useAppContext } from '../contexts/AppContext';

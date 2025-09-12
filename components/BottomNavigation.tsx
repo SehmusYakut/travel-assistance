@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import { useAppContext } from '../contexts/AppContext';
 
 interface BottomNavigationProps {
@@ -9,11 +8,11 @@ interface BottomNavigationProps {
   isLoading?: boolean;
 }
 
-export const BottomNavigation: React.FC<BottomNavigationProps> = ({ 
+export const BottomNavigation = ({ 
   activeTab, 
   onTabChange, 
-  isLoading = false 
-}) => {
+  isLoading = false
+}: BottomNavigationProps) => {
   const { t } = useAppContext();
 
   const tabs = [
