@@ -4,7 +4,6 @@ import React, { useState, useCallback } from 'react';
 import { PlaceType } from '../models/types';
 import { useSimpleMapViewModel } from '../viewmodels/useSimpleMapViewModel';
 import { useAppContext } from '../contexts/AppContext';
-import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { ActionButton } from '../components/ActionButton';
 import { MapComponent } from '../components/MapComponent';
 import { PlacesList } from '../components/PlacesList';
@@ -14,7 +13,6 @@ import { RouteComponent } from '../components/RouteComponent';
 import WeatherComponent from '../components/WeatherComponent';
 import { SettingsModal } from '../components/Settings';
 import { BottomNavigation } from '../components/BottomNavigation';
-import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
 import { EmergencyServices } from '../components/EmergencyServices';
 
 export default function Home() {
@@ -29,39 +27,6 @@ export default function Home() {
     searchNearbyPlaces,
     showCountryGuide,
   } = useSimpleMapViewModel();
-
-  // Pull to refresh handler
-  const handleRefresh = useCallback(async () => {
-    try {
-      // Refresh current location
-      if (mapState.userLocation) {
-        await findCurrentLocation();
-      }
-      
-      // Refresh weather data (will be handled by WeatherComponent internally)
-      
-      // Refresh nearby places if any are shown
-      if (appState.activeTab === 'map' && mapState.places.length > 0) {
-        // Re-search with current location
-        const lastSearchType = localStorage.getItem('lastSearchType') as PlaceType;
-        if (lastSearchType && mapState.userLocation) {
-          await searchNearbyPlaces(lastSearchType);
-        }
-      }
-    } catch (error) {
-      console.error('Refresh failed:', error);
-    }
-  }, [mapState.userLocation, appState.activeTab, mapState.places.length, findCurrentLocation, searchNearbyPlaces]);
-
-  const {
-    containerRef,
-    isRefreshing,
-    pullDistance,
-    progress,
-    shouldRefresh
-  } = usePullToRefresh({
-    onRefresh: handleRefresh
-  });
 
   // Handle bottom navigation
   const handleBottomNavAction = useCallback((action: string) => {
@@ -91,23 +56,10 @@ export default function Home() {
 
   return (
     <div 
-      ref={containerRef}
       className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300 relative overflow-auto"
-      style={{
-        touchAction: 'pan-y',
-        WebkitOverflowScrolling: 'touch',
-        overscrollBehaviorY: 'contain'
-      }}
     >
-      {/* Pull to Refresh Indicator */}
-      <PullToRefreshIndicator
-        pullDistance={pullDistance}
-        isRefreshing={isRefreshing}
-        progress={progress}
-        shouldRefresh={shouldRefresh}
-      />
-
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl pb-20"
+      >
         {/* Header */}
         <header className="text-center mb-6 sm:mb-8 lg:mb-10 relative">
           {/* Settings Button */}
@@ -117,15 +69,6 @@ export default function Home() {
             title={t('settings.title')}
           >
             <span className="text-lg sm:text-xl">⚙️</span>
-          </button>
-
-          {/* Emergency Button - Mobile */}
-          <button
-            onClick={() => setShowEmergency(!showEmergency)}
-            className="absolute top-0 right-14 sm:right-16 p-2 sm:p-3 rounded-xl bg-red-500/90 dark:bg-red-600/90 backdrop-blur-sm border border-red-400 dark:border-red-500 hover:bg-red-500 dark:hover:bg-red-600 transition-all duration-300 shadow-lg hover:shadow-xl text-white md:hidden"
-            title={language === 'tr' ? 'Acil Durum' : 'Emergency'}
-          >
-            <span className="text-lg sm:text-xl">🆘</span>
           </button>
           
           <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white tracking-tight mb-3 sm:mb-4">
@@ -299,6 +242,26 @@ export default function Home() {
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
       />
+
+      {/* Floating Emergency (SOS) Button - Modern FAB Style */}
+      <button
+        onClick={() => setShowEmergency(!showEmergency)}
+        className={`fixed bottom-20 right-4 w-14 h-14 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95 z-50 md:hidden ${
+          showEmergency 
+            ? 'bg-gray-500 dark:bg-gray-600 text-white' 
+            : 'bg-gradient-to-r from-red-500 to-red-600 dark:from-red-600 dark:to-red-700 text-white'
+        }`}
+        title={language === 'tr' ? 'Acil Durum' : 'Emergency'}
+        style={{
+          boxShadow: showEmergency 
+            ? '0 8px 24px rgba(0, 0, 0, 0.3)' 
+            : '0 8px 24px rgba(239, 68, 68, 0.4)'
+        }}
+      >
+        <span className="text-2xl">
+          {showEmergency ? '✕' : '🆘'}
+        </span>
+      </button>
 
       {/* Bottom Navigation - Mobile Only */}
       <BottomNavigation

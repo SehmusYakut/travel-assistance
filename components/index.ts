@@ -6,5 +6,4 @@ export { ErrorMessage } from './ErrorMessage';
 export { RouteComponent } from './RouteComponent';
 export { default as WeatherComponent } from './WeatherComponent';
 export { BottomNavigation } from './BottomNavigation';
-export { PullToRefreshIndicator } from './PullToRefreshIndicator';
 export { EmergencyServices } from './EmergencyServices';
