@@ -16,8 +16,8 @@ interface AppContextType {
 const translations = {
   tr: {
     // Header
-    'app.title': 'Gezgin Rehberi',
-    'app.subtitle': 'Malezya ve Endonezya için kapsamlı seyahat rehberiniz. Yakınızdaki en iyi mekanları keşfedin, güvenlik bilgilerini öğrenin.',
+    'app.title': 'Seyahat Asistanı',
+    'app.subtitle': 'Seyahatiniz için kapsamlı dijital rehberiniz. Yakınızdaki en iyi mekanları keşfedin, rehber bilgilerini öğrenin.',
     
     // Buttons
     'button.findLocation': 'Neredeyim? 📍',
@@ -123,8 +123,8 @@ const translations = {
   },
   en: {
     // Header
-    'app.title': 'Travel Guide',
-    'app.subtitle': 'Your comprehensive travel guide for Malaysia and Indonesia. Discover the best nearby places and learn about safety information.',
+    'app.title': 'Travel Assistant',
+    'app.subtitle': 'Your comprehensive digital travel companion. Discover the best nearby places and access essential travel information.',
     
     // Buttons
     'button.findLocation': 'Where am I? 📍',

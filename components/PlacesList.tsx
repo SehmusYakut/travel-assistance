@@ -7,9 +7,10 @@ interface PlacesListProps {
   places: Place[];
   isLoading: boolean;
   searchType?: string;
+  onClose?: () => void;
 }
 
-export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading, searchType }) => {
+export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading, searchType, onClose }) => {
   const getLoadingMessage = () => {
     switch (searchType) {
       case 'restaurant':
@@ -45,9 +46,20 @@ export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading, searc
 
   return (
     <div className="mt-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Bulunan Mekanlar ({places.length})
-      </h2>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Bulunan Mekanlar ({places.length})
+        </h2>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            title="Kapat"
+          >
+            <span className="text-xl">✕</span>
+          </button>
+        )}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {places.map((place) => (
           <div

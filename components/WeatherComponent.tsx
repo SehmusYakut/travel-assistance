@@ -177,18 +177,6 @@ const WeatherComponent: React.FC<WeatherComponentProps> = ({ selectedCity }) => 
           >
             🏨 {language === 'tr' ? 'Otelin Şehri (KL)' : 'Hotel City (KL)'}
           </button>
-          <button
-            onClick={() => fetchWeather('Jakarta')}
-            className="px-4 py-2 bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-200 dark:hover:bg-green-800 transition-colors text-sm"
-          >
-            🏙️ Jakarta
-          </button>
-          <button
-            onClick={() => fetchWeather('Bali')}
-            className="px-4 py-2 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-800 transition-colors text-sm"
-          >
-            🏝️ Bali
-          </button>
         </div>
         
         <button
@@ -256,26 +244,6 @@ const WeatherComponent: React.FC<WeatherComponentProps> = ({ selectedCity }) => 
               }`}
             >
               🏨 {language === 'tr' ? 'Otelin Şehri (KL)' : 'Hotel City (KL)'}
-            </button>
-            <button
-              onClick={() => fetchWeather('Jakarta')}
-              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                weatherData.location.includes('Jakarta') 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-800'
-              }`}
-            >
-              🏙️ Jakarta
-            </button>
-            <button
-              onClick={() => fetchWeather('Bali')}
-              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                weatherData.location.includes('Bali') 
-                  ? 'bg-purple-500 text-white' 
-                  : 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800'
-              }`}
-            >
-              🏝️ Bali
             </button>
             <button
               onClick={getCurrentLocation}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { PlaceType } from '../models/types';
 import { useSimpleMapViewModel } from '../viewmodels/useSimpleMapViewModel';
 import { useAppContext } from '../contexts/AppContext';
 import { ActionButton } from '../components/ActionButton';
@@ -29,6 +28,7 @@ export default function Home() {
     searchNearbyPlaces,
     showCountryGuide,
     clearGuide,
+    clearPlaces,
   } = useSimpleMapViewModel();
 
   // Modal states
@@ -52,8 +52,23 @@ export default function Home() {
       case 'transport':
         searchNearbyPlaces('transit_station');
         break;
+      case 'malaysia':
+        showCountryGuide('malaysia');
+        break;
+      case 'indonesia':
+        showCountryGuide('indonesia');
+        break;
     }
-  }, [findCurrentLocation, searchNearbyPlaces]);
+  }, [findCurrentLocation, searchNearbyPlaces, showCountryGuide]);
+
+  // Handle tool selection from bottom navigation
+  const handleToolSelect = useCallback((tool: 'currency' | 'translator') => {
+    if (tool === 'currency') {
+      setIsCurrencyOpen(true);
+    } else if (tool === 'translator') {
+      setIsTranslatorOpen(true);
+    }
+  }, []);
 
   return (
     <div 
@@ -64,49 +79,14 @@ export default function Home() {
         {/* Header */}
         <header className="text-center mb-6 sm:mb-8 lg:mb-10 relative">
           {/* Settings Button */}
-          {/* Utility Buttons */}
-          <div className="absolute top-0 left-0 right-0 flex justify-between items-center px-2 sm:px-4">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setIsCurrencyOpen(true)}
-                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-                title="Döviz Çevirici"
-              >
-                <span className="text-lg sm:text-xl">💰</span>
-              </button>
-              <button
-                onClick={() => setIsTranslatorOpen(true)}
-                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-                title="Çevirmen"
-              >
-                <span className="text-lg sm:text-xl">🗣️</span>
-              </button>
-            </div>
-            
-            <div className="flex gap-2">
-              <button
-                onClick={() => showCountryGuide('malaysia')}
-                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-                title="Malezya Rehberi"
-              >
-                <span className="text-lg sm:text-xl">🇲🇾</span>
-              </button>
-              <button
-                onClick={() => showCountryGuide('indonesia')}
-                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-                title="Endonezya Rehberi"
-              >
-                <span className="text-lg sm:text-xl">🇮🇩</span>
-              </button>
-              <button
-                onClick={() => setIsSettingsOpen(true)}
-                className="p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-                title={t('settings.title')}
-              >
-                <span className="text-lg sm:text-xl">⚙️</span>
-              </button>
-            </div>
-          </div>
+          {/* Settings Button */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="absolute top-0 right-0 p-2 sm:p-3 rounded-xl bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-gray-200 dark:border-slate-600 hover:bg-white dark:hover:bg-slate-800 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+            title={t('settings.title')}
+          >
+            <span className="text-lg sm:text-xl">⚙️</span>
+          </button>
           
           <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white tracking-tight mb-3 sm:mb-4">
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
@@ -134,7 +114,7 @@ export default function Home() {
             </ActionButton>
             
             <ActionButton
-              onClick={() => searchNearbyPlaces(PlaceType.RESTAURANT)}
+              onClick={() => searchNearbyPlaces('restaurant')}
               variant="success"
               disabled={appState.status === 'loading'}
             >
@@ -144,7 +124,7 @@ export default function Home() {
             </ActionButton>
             
             <ActionButton
-              onClick={() => searchNearbyPlaces(PlaceType.TRAIN_STATION)}
+              onClick={() => searchNearbyPlaces('transit_station')}
               variant="warning"
               disabled={appState.status === 'loading'}
             >
@@ -226,6 +206,7 @@ export default function Home() {
                 <PlacesList
                   places={mapState.places}
                   isLoading={appState.status === 'loading'}
+                  onClose={clearPlaces}
                 />
               </div>
             )}
@@ -329,6 +310,7 @@ export default function Home() {
         activeTab={appState.activeTab}
         onTabChange={handleBottomNavAction}
         isLoading={appState.status === 'loading'}
+        onToolSelect={handleToolSelect}
       />
     </div>
   );

@@ -22,7 +22,17 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const markersRef = useRef<google.maps.Marker[]>([]);
+  const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
+
+  // Clear all markers
+  const clearMarkers = useCallback(() => {
+    markersRef.current.forEach(marker => marker.setMap(null));
+    markersRef.current = [];
+  }, []);
 
   // Wait for Google Maps API loaded from layout.tsx
   const waitForGoogleMaps = useCallback(() => {
@@ -80,11 +90,92 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     }
   }, [center, zoom, onMapLoad, waitForGoogleMaps]);
 
-  // Clear all markers
-  const clearMarkers = useCallback(() => {
-    markersRef.current.forEach(marker => marker.setMap(null));
-    markersRef.current = [];
+  // Initialize autocomplete service
+  const initializeAutocomplete = useCallback(() => {
+    if (window.google && window.google.maps && window.google.maps.places) {
+      autocompleteService.current = new window.google.maps.places.AutocompleteService();
+    }
   }, []);
+
+  // Handle search input
+  const handleSearchInput = useCallback((value: string) => {
+    setSearchQuery(value);
+    
+    if (value.length > 2 && autocompleteService.current) {
+      autocompleteService.current.getPlacePredictions(
+        {
+          input: value,
+          types: ['establishment', 'geocode'],
+        },
+        (predictions, status) => {
+          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+            setSearchSuggestions(predictions.slice(0, 5));
+            setShowSuggestions(true);
+          } else {
+            setSearchSuggestions([]);
+            setShowSuggestions(false);
+          }
+        }
+      );
+    } else {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, []);
+
+  // Handle suggestion selection
+  const handleSuggestionSelect = useCallback((placeId: string, description: string) => {
+    if (!map) return;
+    
+    const placesService = new google.maps.places.PlacesService(map);
+    
+    placesService.getDetails(
+      {
+        placeId: placeId,
+        fields: ['geometry', 'name', 'formatted_address']
+      },
+      (place, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && place && place.geometry) {
+          const location = place.geometry.location!;
+          
+          // Center map on selected place
+          map.setCenter(location);
+          map.setZoom(15);
+          
+          // Clear previous markers and add new one
+          clearMarkers();
+          
+          const marker = new google.maps.Marker({
+            position: location,
+            map: map,
+            title: place.name,
+            icon: {
+              url: 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23DC2626"%3E%3Cpath d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/%3E%3C/svg%3E',
+              scaledSize: new google.maps.Size(40, 40),
+              anchor: new google.maps.Point(20, 40)
+            }
+          });
+          
+          markersRef.current.push(marker);
+          
+          // Show info window
+          const infoWindow = new google.maps.InfoWindow({
+            content: `
+              <div style="padding: 8px; max-width: 200px;">
+                <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: bold;">${place.name}</h3>
+                <p style="margin: 0; font-size: 12px; color: #666;">${place.formatted_address}</p>
+              </div>
+            `
+          });
+          
+          infoWindow.open(map, marker);
+        }
+      }
+    );
+    
+    setSearchQuery(description);
+    setShowSuggestions(false);
+  }, [map, clearMarkers]);
 
   // Add markers for places with better icons and info
   const addPlaceMarkers = useCallback(() => {
@@ -214,7 +305,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   // Initialize map on component mount
   useEffect(() => {
     initializeMap();
-  }, [initializeMap]);
+    initializeAutocomplete();
+  }, [initializeMap, initializeAutocomplete]);
 
   // Update markers when places change
   useEffect(() => {
@@ -252,6 +344,44 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
   return (
     <div className="relative w-full h-96 bg-gray-100 rounded-lg overflow-hidden">
+      {/* Search Input */}
+      <div className="absolute top-4 left-4 right-4 z-20">
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Adres ara... (örn: Bursa)"
+            value={searchQuery}
+            onChange={(e) => handleSearchInput(e.target.value)}
+            className="w-full px-4 py-2 pr-10 bg-white rounded-lg border border-gray-300 shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          <button
+            onClick={() => {
+              setSearchQuery('');
+              setShowSuggestions(false);
+            }}
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
+          
+          {/* Search Suggestions */}
+          {showSuggestions && searchSuggestions.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg border border-gray-200 shadow-lg max-h-60 overflow-y-auto z-30">
+              {searchSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion.place_id}
+                  onClick={() => handleSuggestionSelect(suggestion.place_id, suggestion.description)}
+                  className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                >
+                  <div className="text-sm text-gray-900">{suggestion.structured_formatting.main_text}</div>
+                  <div className="text-xs text-gray-500">{suggestion.structured_formatting.secondary_text}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      
       {isLoading && (
         <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center z-10">
           <div className="text-center">

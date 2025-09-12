@@ -77,7 +77,7 @@ export const useSimpleMapViewModel = () => {
 
         setAppState(prev => ({ ...prev, status: 'success' }));
       },
-      (_) => {
+      () => {
         setAppState(prev => ({
           ...prev,
           status: 'error',
@@ -144,6 +144,11 @@ export const useSimpleMapViewModel = () => {
     }));
   }, []);
 
+  const clearPlaces = useCallback(() => {
+    setMapState(prev => ({ ...prev, places: [] }));
+    setAppState(prev => ({ ...prev, activeTab: 'map' }));
+  }, []);
+
   return {
     mapState,
     appState,
@@ -151,6 +156,7 @@ export const useSimpleMapViewModel = () => {
     findCurrentLocation,
     searchNearbyPlaces,
     showCountryGuide,
-    clearGuide
+    clearGuide,
+    clearPlaces
   };
 };
