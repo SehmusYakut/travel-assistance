@@ -36,23 +36,28 @@ export const usePullToRefresh = ({
 
   // Handle touch start
   const handleTouchStart = useCallback((e: TouchEvent) => {
-    if (!checkCanPull() || isRefreshing) return;
+    if (isRefreshing) return;
     
+    // Always record touch start position
     startY.current = e.touches[0].clientY;
     currentY.current = e.touches[0].clientY;
     isDragging.current = false;
+    
+    // Check if we're at the top for potential pull-to-refresh
+    checkCanPull();
   }, [checkCanPull, isRefreshing]);
 
   // Handle touch move
   const handleTouchMove = useCallback((e: TouchEvent) => {
-    if (!canPull || isRefreshing) return;
+    if (isRefreshing) return;
 
     currentY.current = e.touches[0].clientY;
     const deltaY = currentY.current - startY.current;
 
-    if (deltaY > 0) {
+    // Only handle pull-to-refresh when at top AND pulling down
+    if (canPull && deltaY > 0 && containerRef.current && containerRef.current.scrollTop <= 0) {
       isDragging.current = true;
-      e.preventDefault(); // Prevent scroll
+      e.preventDefault(); // Only prevent scroll when actually pulling to refresh
       
       // Calculate pull distance with diminishing returns
       const distance = Math.min(
@@ -61,6 +66,10 @@ export const usePullToRefresh = ({
       );
       
       setPullDistance(distance);
+    } else {
+      // Allow normal scrolling in all other cases
+      isDragging.current = false;
+      setPullDistance(0);
     }
   }, [canPull, isRefreshing, maxPullDistance]);
 

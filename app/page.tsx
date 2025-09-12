@@ -93,6 +93,11 @@ export default function Home() {
     <div 
       ref={containerRef}
       className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300 relative overflow-auto"
+      style={{
+        touchAction: 'pan-y',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehaviorY: 'contain'
+      }}
     >
       {/* Pull to Refresh Indicator */}
       <PullToRefreshIndicator
