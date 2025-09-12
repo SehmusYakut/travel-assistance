@@ -237,6 +237,16 @@ a,
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  /* Padding for bottom navigation */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Prevent pull-to-refresh on non-mobile content */
+  body {
+    overscroll-behavior-y: contain;
+  }
 }
 
 /* Focus styles for better accessibility */

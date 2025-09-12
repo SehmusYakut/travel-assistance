@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { PlaceType } from '../models/types';
 import { useSimpleMapViewModel } from '../viewmodels/useSimpleMapViewModel';
 import { useAppContext } from '../contexts/AppContext';
+import { usePullToRefresh } from '../hooks/usePullToRefresh';
 import { ActionButton } from '../components/ActionButton';
 import { MapComponent } from '../components/MapComponent';
 import { PlacesList } from '../components/PlacesList';
@@ -12,10 +13,14 @@ import { ErrorMessage } from '../components/ErrorMessage';
 import { RouteComponent } from '../components/RouteComponent';
 import WeatherComponent from '../components/WeatherComponent';
 import { SettingsModal } from '../components/Settings';
+import { BottomNavigation } from '../components/BottomNavigation';
+import { PullToRefreshIndicator } from '../components/PullToRefreshIndicator';
+import { EmergencyServices } from '../components/EmergencyServices';
 
 export default function Home() {
   const { t, language, theme } = useAppContext();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showEmergency, setShowEmergency] = useState(false);
   const {
     mapState,
     appState,
@@ -25,8 +30,78 @@ export default function Home() {
     showCountryGuide,
   } = useSimpleMapViewModel();
 
+  // Pull to refresh handler
+  const handleRefresh = useCallback(async () => {
+    try {
+      // Refresh current location
+      if (mapState.userLocation) {
+        await findCurrentLocation();
+      }
+      
+      // Refresh weather data (will be handled by WeatherComponent internally)
+      
+      // Refresh nearby places if any are shown
+      if (appState.activeTab === 'map' && mapState.places.length > 0) {
+        // Re-search with current location
+        const lastSearchType = localStorage.getItem('lastSearchType') as PlaceType;
+        if (lastSearchType && mapState.userLocation) {
+          await searchNearbyPlaces(lastSearchType);
+        }
+      }
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    }
+  }, [mapState.userLocation, appState.activeTab, mapState.places.length, findCurrentLocation, searchNearbyPlaces]);
+
+  const {
+    containerRef,
+    isRefreshing,
+    pullDistance,
+    progress,
+    shouldRefresh
+  } = usePullToRefresh({
+    onRefresh: handleRefresh
+  });
+
+  // Handle bottom navigation
+  const handleBottomNavAction = useCallback((action: string) => {
+    // Store last search type for refresh
+    if (action === 'restaurants' || action === 'transport') {
+      localStorage.setItem('lastSearchType', action);
+    }
+
+    switch (action) {
+      case 'findLocation':
+        findCurrentLocation();
+        break;
+      case 'restaurants':
+        searchNearbyPlaces('restaurant');
+        break;
+      case 'transport':
+        searchNearbyPlaces('transit_station');
+        break;
+      case 'malaysia':
+        showCountryGuide('malaysia');
+        break;
+      case 'indonesia':
+        showCountryGuide('indonesia');
+        break;
+    }
+  }, [findCurrentLocation, searchNearbyPlaces, showCountryGuide]);
+
   return (
-    <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300">
+    <div 
+      ref={containerRef}
+      className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-blue-900 min-h-screen font-sans text-gray-800 dark:text-gray-200 transition-colors duration-300 relative overflow-auto"
+    >
+      {/* Pull to Refresh Indicator */}
+      <PullToRefreshIndicator
+        pullDistance={pullDistance}
+        isRefreshing={isRefreshing}
+        progress={progress}
+        shouldRefresh={shouldRefresh}
+      />
+
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 max-w-7xl">
         {/* Header */}
         <header className="text-center mb-6 sm:mb-8 lg:mb-10 relative">
@@ -37,6 +112,15 @@ export default function Home() {
             title={t('settings.title')}
           >
             <span className="text-lg sm:text-xl">⚙️</span>
+          </button>
+
+          {/* Emergency Button - Mobile */}
+          <button
+            onClick={() => setShowEmergency(!showEmergency)}
+            className="absolute top-0 right-14 sm:right-16 p-2 sm:p-3 rounded-xl bg-red-500/90 dark:bg-red-600/90 backdrop-blur-sm border border-red-400 dark:border-red-500 hover:bg-red-500 dark:hover:bg-red-600 transition-all duration-300 shadow-lg hover:shadow-xl text-white md:hidden"
+            title={language === 'tr' ? 'Acil Durum' : 'Emergency'}
+          >
+            <span className="text-lg sm:text-xl">🆘</span>
           </button>
           
           <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 dark:text-white tracking-tight mb-3 sm:mb-4">
@@ -107,6 +191,13 @@ export default function Home() {
 
           {/* Content Sections */}
           <div className="space-y-6 sm:space-y-8">
+            {/* Emergency Services - Mobile (when emergency button is pressed) */}
+            {showEmergency && (
+              <div className="order-0 md:hidden">
+                <EmergencyServices />
+              </div>
+            )}
+
             {/* Guide Content - Show first on mobile when active */}
             {appState.activeTab === 'guide' && appState.guideContent && (
               <div className="order-1">
@@ -202,6 +293,13 @@ export default function Home() {
       <SettingsModal 
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
+      />
+
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNavigation
+        activeTab={appState.activeTab}
+        onTabChange={handleBottomNavAction}
+        isLoading={appState.status === 'loading'}
       />
     </div>
   );
