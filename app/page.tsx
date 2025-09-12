@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, lazy, Suspense, useEffect } from 'react';
 import { useSimpleMapViewModel } from '../viewmodels/useSimpleMapViewModel';
 import { useAppContext } from '../contexts/AppContext';
 import { ActionButton } from '../components/ActionButton';
@@ -9,12 +9,15 @@ import { PlacesList } from '../components/PlacesList';
 import { GuideContent } from '../components/GuideContent';
 import { ErrorMessage } from '../components/ErrorMessage';
 import { RouteComponent } from '../components/RouteComponent';
-import WeatherComponent from '../components/WeatherComponent';
-import { SettingsModal } from '../components/Settings';
 import { BottomNavigation } from '../components/BottomNavigation';
-import { EmergencyServices } from '../components/EmergencyServices';
-import { CurrencyConverter } from '../components/CurrencyConverter';
-import { Translator } from '../components/Translator';
+
+// Lazy load components for better performance
+const WeatherComponent = lazy(() => import('../components/WeatherComponent'));
+const SettingsModal = lazy(() => import('../components/Settings').then(module => ({ default: module.SettingsModal })));
+const EmergencyServices = lazy(() => import('../components/EmergencyServices').then(module => ({ default: module.EmergencyServices })));
+const CurrencyConverter = lazy(() => import('../components/CurrencyConverter').then(module => ({ default: module.CurrencyConverter })));
+const Translator = lazy(() => import('../components/Translator').then(module => ({ default: module.Translator })));
+const TurkishRestaurants = lazy(() => import('../components/TurkishRestaurants'));
 
 export default function Home() {
   const { t, language } = useAppContext();
@@ -34,6 +37,7 @@ export default function Home() {
   // Modal states
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isTranslatorOpen, setIsTranslatorOpen] = useState(false);
+  const [showTurkishRestaurants, setShowTurkishRestaurants] = useState(false);
 
   // Handle bottom navigation
   const handleBottomNavAction = useCallback((action: string) => {
@@ -68,6 +72,34 @@ export default function Home() {
     } else if (tool === 'translator') {
       setIsTranslatorOpen(true);
     }
+  }, []);
+
+  // Memory cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Clear any timeouts, intervals, or listeners
+      if (typeof window !== 'undefined') {
+        // Clear localStorage cache periodically to prevent memory bloat
+        try {
+          const lastClear = localStorage.getItem('lastCacheClear');
+          const now = Date.now();
+          const oneHour = 60 * 60 * 1000;
+          
+          if (!lastClear || now - parseInt(lastClear) > oneHour) {
+            // Clear search cache older than 1 hour
+            const keys = Object.keys(localStorage);
+            keys.forEach(key => {
+              if (key.startsWith('searchCache_') || key.startsWith('weatherCache_')) {
+                localStorage.removeItem(key);
+              }
+            });
+            localStorage.setItem('lastCacheClear', now.toString());
+          }
+        } catch (error) {
+          console.warn('Cache cleanup error:', error);
+        }
+      }
+    };
   }, []);
 
   return (
@@ -132,6 +164,16 @@ export default function Home() {
               <span className="hidden sm:inline">{t('button.transport')}</span>
               <span className="sm:hidden text-xs font-medium">{t('button.transport.short')}</span>
             </ActionButton>
+
+            <ActionButton
+              onClick={() => setShowTurkishRestaurants(!showTurkishRestaurants)}
+              variant="danger"
+              disabled={appState.status === 'loading'}
+            >
+              <span className="text-lg sm:text-xl">🇹🇷</span>
+              <span className="hidden sm:inline">Türk Restoranları</span>
+              <span className="sm:hidden text-xs font-medium">Türk</span>
+            </ActionButton>
           </div>
 
           {/* Content Sections */}
@@ -139,7 +181,9 @@ export default function Home() {
             {/* Emergency Services - Mobile (when emergency button is pressed) */}
             {showEmergency && (
               <div className="order-0 md:hidden">
-                <EmergencyServices />
+                <Suspense fallback={<div className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>}>
+                  <EmergencyServices />
+                </Suspense>
               </div>
             )}
 
@@ -154,13 +198,51 @@ export default function Home() {
               </div>
             )}
 
+            {/* Turkish Restaurants */}
+            {showTurkishRestaurants && (
+              <div className="order-2">
+                <Suspense 
+                  fallback={
+                    <div className="bg-white rounded-lg shadow-lg p-4 animate-pulse">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-8 h-8 bg-gray-200 rounded"></div>
+                        <div className="w-32 h-6 bg-gray-200 rounded"></div>
+                      </div>
+                      <div className="space-y-3">
+                        {[1,2,3].map(i => (
+                          <div key={i} className="border rounded-lg p-3">
+                            <div className="w-3/4 h-4 bg-gray-200 rounded mb-2"></div>
+                            <div className="w-1/2 h-3 bg-gray-200 rounded"></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  }
+                >
+                  <TurkishRestaurants
+                    map={mapState.map}
+                    userLocation={mapState.userLocation}
+                    onRestaurantSelect={(restaurant) => {
+                      // Focus on selected restaurant on map
+                      if (mapState.map) {
+                        mapState.map.setCenter(restaurant.geometry.location);
+                        mapState.map.setZoom(16);
+                      }
+                    }}
+                  />
+                </Suspense>
+              </div>
+            )}
+
             {/* Weather Information - Compact on mobile */}
-            <div className="order-2">
-              <WeatherComponent />
+            <div className="order-3">
+              <Suspense fallback={<div className="animate-pulse bg-gray-200 h-24 rounded-lg"></div>}>
+                <WeatherComponent />
+              </Suspense>
             </div>
 
             {/* Map Section - Show after guides on mobile */}
-            <div className="order-3">
+            <div className="order-4">
               <div className="bg-white dark:bg-slate-700 rounded-2xl p-3 sm:p-4 shadow-sm border border-gray-100 dark:border-slate-600 transition-colors duration-300">
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4 flex items-center">
                   <span className="text-xl sm:text-2xl mr-2">🗺️</span>
@@ -178,7 +260,7 @@ export default function Home() {
 
             {/* Route Planning - Collapsible on mobile */}
             {mapState.map && (
-              <div className="order-4">
+              <div className="order-5">
                 <RouteComponent
                   map={mapState.map}
                   userLocation={mapState.userLocation}
@@ -240,10 +322,14 @@ export default function Home() {
       </div>
 
       {/* Settings Modal */}
-      <SettingsModal 
-        isOpen={isSettingsOpen} 
-        onClose={() => setIsSettingsOpen(false)} 
-      />
+      {isSettingsOpen && (
+        <Suspense fallback={<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-white"></div></div>}>
+          <SettingsModal 
+            isOpen={isSettingsOpen} 
+            onClose={() => setIsSettingsOpen(false)} 
+          />
+        </Suspense>
+      )}
 
       {/* Floating Emergency (SOS) Button - Modern FAB Style */}
       <button
@@ -279,7 +365,9 @@ export default function Home() {
               </button>
             </div>
             <div className="p-4">
-              <CurrencyConverter isOpen={true} onClose={() => setIsCurrencyOpen(false)} />
+              <Suspense fallback={<div className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>}>
+                <CurrencyConverter isOpen={true} onClose={() => setIsCurrencyOpen(false)} />
+              </Suspense>
             </div>
           </div>
         </div>
@@ -299,7 +387,9 @@ export default function Home() {
               </button>
             </div>
             <div className="p-4">
-              <Translator isOpen={true} onClose={() => setIsTranslatorOpen(false)} />
+              <Suspense fallback={<div className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>}>
+                <Translator isOpen={true} onClose={() => setIsTranslatorOpen(false)} />
+              </Suspense>
             </div>
           </div>
         </div>

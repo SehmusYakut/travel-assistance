@@ -58,8 +58,21 @@ export interface AppState {
 
 export enum PlaceType {
   RESTAURANT = 'restaurant',
+  TURKISH_RESTAURANT = 'turkish_restaurant',
   TRAIN_STATION = 'train_station',
   TOURIST_ATTRACTION = 'tourist_attraction',
   HOSPITAL = 'hospital',
   ATM = 'atm'
+}
+
+// Türk mutfağı kategorileri
+export interface TurkishRestaurantCategory {
+  name: string;
+  keywords: string[];
+  description: string;
+}
+
+export interface TurkishCuisineData {
+  categories: TurkishRestaurantCategory[];
+  searchKeywords: string[];
 }

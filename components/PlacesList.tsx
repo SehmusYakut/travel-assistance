@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Place } from '../models/types';
 
 interface PlacesListProps {
@@ -10,7 +10,7 @@ interface PlacesListProps {
   onClose?: () => void;
 }
 
-export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading, searchType, onClose }) => {
+export const PlacesList: React.FC<PlacesListProps> = memo(({ places, isLoading, searchType, onClose }) => {
   const getLoadingMessage = () => {
     switch (searchType) {
       case 'restaurant':
@@ -99,4 +99,6 @@ export const PlacesList: React.FC<PlacesListProps> = ({ places, isLoading, searc
       </div>
     </div>
   );
-};
+});
+
+PlacesList.displayName = 'PlacesList';

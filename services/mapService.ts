@@ -1,4 +1,5 @@
 import { Location, Place } from '../models/types';
+import { APIOptimizationService } from './apiOptimizationService';
 
 export class LocationService {
   /**
@@ -47,6 +48,7 @@ export class GoogleMapsService {
   private static instance: GoogleMapsService;
   private isLoaded = false;
   private loadPromise: Promise<void> | null = null;
+  private apiOptimization = APIOptimizationService.getInstance();
 
   private constructor() {}
 
@@ -140,29 +142,45 @@ export class GoogleMapsService {
   }
 
   /**
-   * Belirli bir konumun yakınındaki mekanları arar - Gerçek Google Places API
+   * Belirli bir konumun yakınındaki mekanları arar - Optimize edilmiş Google Places API
    */
-  searchNearbyPlaces(
+  async searchNearbyPlaces(
     map: google.maps.Map,
     location: Location,
     type: string,
     radius: number = 1000
   ): Promise<Place[]> {
+    console.log('🚀 Optimize edilmiş API Arama başlatıldı - Type:', type, 'Location:', location);
+    
+    if (typeof window === 'undefined' || !window.google || !window.google.maps) {
+      console.error('❌ Google Maps API yüklenmemiş');
+      throw new Error('Google Maps API henüz yüklenmedi.');
+    }
+
+    if (!window.google.maps.places) {
+      console.error('❌ Google Places API yüklenmemiş');
+      throw new Error('Google Places API yüklenmemiş. Lütfen Google Cloud Console\'dan Places API\'yi etkinleştirin.');
+    }
+
+    // API optimizasyon servisi ile cache'li arama
+    return this.apiOptimization.optimizedPlacesSearch(
+      () => this.performPlacesSearch(map, location, type, radius),
+      location,
+      type,
+      radius
+    );
+  }
+
+  /**
+   * Gerçek Places API çağrısını yapar
+   */
+  private performPlacesSearch(
+    map: google.maps.Map,
+    location: Location,
+    type: string,
+    radius: number
+  ): Promise<Place[]> {
     return new Promise((resolve, reject) => {
-      console.log('🚀 Gerçek API Arama başlatıldı - Type:', type, 'Location:', location);
-      
-      if (typeof window === 'undefined' || !window.google || !window.google.maps) {
-        console.error('❌ Google Maps API yüklenmemiş');
-        reject(new Error('Google Maps API henüz yüklenmedi.'));
-        return;
-      }
-
-      if (!window.google.maps.places) {
-        console.error('❌ Google Places API yüklenmemiş');
-        reject(new Error('Google Places API yüklenmemiş. Lütfen Google Cloud Console\'dan Places API\'yi etkinleştirin.'));
-        return;
-      }
-
       const service = new window.google.maps.places.PlacesService(map);
       
       // Daha spesifik arama parametreleri
@@ -172,16 +190,12 @@ export class GoogleMapsService {
         type: type === 'train_station' ? 'transit_station' : type
       };
 
-      console.log('📍 Places API çağrısı yapılıyor...', request);
+      console.log('📍 Gerçek Places API çağrısı yapılıyor...', request);
 
       const timeoutId = setTimeout(() => {
-        console.log('⏰ API Timeout - Google Cloud Console ayarlarını kontrol edin:');
-        console.log('1. https://console.cloud.google.com/apis/dashboard adresine gidin');
-        console.log('2. Places API etkin mi kontrol edin');
-        console.log('3. Billing hesabı aktif mi kontrol edin');
-        console.log('4. API key kısıtlamalarını kontrol edin');
-        reject(new Error('Places API timeout. Google Cloud Console ayarlarını kontrol edin.'));
-      }, 15000);
+        console.log('⏰ API Timeout');
+        reject(new Error('Places API timeout. Lütfen tekrar deneyin.'));
+      }, 10000); // Timeout'u kısalttık
 
       service.nearbySearch(request, (results, status) => {
         clearTimeout(timeoutId);
@@ -204,43 +218,11 @@ export class GoogleMapsService {
             types: result.types || [],
           }));
           
-          console.log('✅ Gerçek API verisi:', places.length, 'mekan bulundu');
-          console.log('📊 Bulunan mekanlar:', places.map(p => p.name));
+          console.log('✅ API verisi:', places.length, 'mekan bulundu');
           resolve(places);
         } else if (status === window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
-          console.log('🤷‍♂️ Bu konumda hiç sonuç bulunamadı, daha geniş arama yapılıyor...');
-          
-          // Daha geniş arama yap
-          const widerRequest = {
-            ...request,
-            radius: radius * 3,
-          };
-          
-          service.nearbySearch(widerRequest, (widerResults, widerStatus) => {
-            if (widerStatus === window.google.maps.places.PlacesServiceStatus.OK && widerResults && widerResults.length > 0) {
-              const places: Place[] = widerResults.slice(0, 10).map((result) => ({
-                place_id: result.place_id || '',
-                name: result.name || '',
-                vicinity: result.vicinity || '',
-                rating: result.rating,
-                user_ratings_total: result.user_ratings_total,
-                geometry: {
-                  location: {
-                    lat: result.geometry?.location?.lat() || 0,
-                    lng: result.geometry?.location?.lng() || 0,
-                  },
-                },
-                icon: result.icon,
-                types: result.types || [],
-              }));
-              
-              console.log('✅ Geniş arama ile bulunan:', places.length, 'mekan');
-              resolve(places);
-            } else {
-              console.log('❌ Geniş aramada da sonuç yok');
-              resolve([]);
-            }
-          });
+          console.log('🤷‍♂️ Bu konumda sonuç bulunamadı');
+          resolve([]);
         } else {
           console.error('❌ Places API Hatası - Status:', status);
           
@@ -248,7 +230,7 @@ export class GoogleMapsService {
           let errorMessage = `Places API Hatası: ${status}`;
           switch (status) {
             case window.google.maps.places.PlacesServiceStatus.OVER_QUERY_LIMIT:
-              errorMessage = 'API quota aşıldı. Google Cloud Console\'dan quota limitini artırın.';
+              errorMessage = 'API quota aşıldı. Lütfen daha sonra tekrar deneyin.';
               break;
             case window.google.maps.places.PlacesServiceStatus.REQUEST_DENIED:
               errorMessage = 'API key geçersiz veya Places API etkin değil.';

@@ -9,3 +9,4 @@ export { BottomNavigation } from './BottomNavigation';
 export { EmergencyServices } from './EmergencyServices';
 export { CurrencyConverter } from './CurrencyConverter';
 export { Translator } from './Translator';
+export { default as TurkishRestaurants } from './TurkishRestaurants';

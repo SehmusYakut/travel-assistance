@@ -1,7 +1,23 @@
 'use client';
 
-import { useCallback, useState, useEffect, useRef } from 'react';
+import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
 import { Location, Place } from '../models/types';
+import { APIOptimizationService } from '../services/apiOptimizationService';
+
+// Custom debounce hook for performance
+const useDebounce = (value: string, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+};
 
 interface MapComponentProps {
   center: Location;
@@ -27,6 +43,10 @@ export const MapComponent: React.FC<MapComponentProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const autocompleteService = useRef<google.maps.places.AutocompleteService | null>(null);
+  const apiOptimization = useRef(APIOptimizationService.getInstance());
+  
+  // Debounce search query to reduce API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Clear all markers
   const clearMarkers = useCallback(() => {
@@ -97,31 +117,54 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     }
   }, []);
 
-  // Handle search input
+  // Handle search input - only update state, no API call
   const handleSearchInput = useCallback((value: string) => {
     setSearchQuery(value);
     
-    if (value.length > 2 && autocompleteService.current) {
-      autocompleteService.current.getPlacePredictions(
-        {
-          input: value,
-          types: ['establishment', 'geocode'],
-        },
-        (predictions, status) => {
-          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-            setSearchSuggestions(predictions.slice(0, 5));
-            setShowSuggestions(true);
-          } else {
-            setSearchSuggestions([]);
-            setShowSuggestions(false);
-          }
-        }
-      );
-    } else {
+    if (value.length <= 2) {
       setSearchSuggestions([]);
       setShowSuggestions(false);
     }
   }, []);
+
+  // Debounced search effect to reduce API calls
+  useEffect(() => {
+    if (debouncedSearchQuery.length > 2 && autocompleteService.current) {
+      // Use optimization service for autocomplete
+      apiOptimization.current
+        .optimizedAutocomplete(
+          () =>
+            new Promise<google.maps.places.AutocompletePrediction[]>((resolve, reject) => {
+              autocompleteService.current!.getPlacePredictions(
+                {
+                  input: debouncedSearchQuery,
+                  types: ['establishment', 'geocode'],
+                },
+                (predictions, status) => {
+                  if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
+                    resolve(predictions.slice(0, 5));
+                  } else {
+                    resolve([]);
+                  }
+                }
+              );
+            }),
+          debouncedSearchQuery
+        )
+        .then((predictions) => {
+          setSearchSuggestions(predictions);
+          setShowSuggestions(predictions.length > 0);
+        })
+        .catch((error) => {
+          console.error('❌ Autocomplete hatası:', error);
+          setSearchSuggestions([]);
+          setShowSuggestions(false);
+        });
+    } else if (debouncedSearchQuery.length <= 2) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [debouncedSearchQuery]);
 
   // Handle suggestion selection
   const handleSuggestionSelect = useCallback((placeId: string, description: string) => {
