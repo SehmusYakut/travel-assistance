@@ -67,28 +67,39 @@ export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> =
               <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
                 {t('settings.language')}
               </h4>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => handleLanguageChange('tr')}
-                  className={`flex items-center justify-center p-3 rounded-xl border-2 transition-all touch-manipulation ${
-                    language === 'tr'
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'
-                  }`}
-                >
-                  <span className="text-lg mr-2">🇹🇷</span>
-                  <span className="font-medium">Türkçe</span>
-                </button>
+              <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => handleLanguageChange('en')}
-                  className={`flex items-center justify-center p-3 rounded-xl border-2 transition-all touch-manipulation ${
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all touch-manipulation ${
                     language === 'en'
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  <span className="text-lg mr-2">🇺🇸</span>
-                  <span className="font-medium">English</span>
+                  <span className="text-lg mb-1">🇺🇸</span>
+                  <span className="font-medium text-sm">English</span>
+                </button>
+                <button
+                  onClick={() => handleLanguageChange('tr')}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all touch-manipulation ${
+                    language === 'tr'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <span className="text-lg mb-1">🇹🇷</span>
+                  <span className="font-medium text-sm">Türkçe</span>
+                </button>
+                <button
+                  onClick={() => handleLanguageChange('ku')}
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all touch-manipulation ${
+                    language === 'ku'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'
+                  }`}
+                >
+                  <span className="text-lg mb-1">🟥🟩🟨</span>
+                  <span className="font-medium text-sm">Kurdî</span>
                 </button>
               </div>
             </div>

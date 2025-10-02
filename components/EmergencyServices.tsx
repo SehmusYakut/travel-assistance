@@ -3,11 +3,14 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 
+// Note: This component is configured for Malaysia and Indonesia as examples
+// You can modify it to support any country by updating the emergency data below
+
 interface EmergencyContact {
   name: string;
   number: string;
   type: 'police' | 'medical' | 'fire' | 'tourist' | 'consulate';
-  country: 'malaysia' | 'indonesia';
+  country: 'malaysia' | 'indonesia'; // Update this to support your countries
   city?: string;
   description: string;
 }
@@ -17,7 +20,7 @@ interface EmergencyLocation {
   address: string;
   phone: string;
   type: 'hospital' | 'police' | 'consulate';
-  country: 'malaysia' | 'indonesia';
+  country: 'malaysia' | 'indonesia'; // Update this to support your countries
   city: string;
   coordinates?: { lat: number; lng: number };
   hours?: string;
@@ -29,6 +32,8 @@ export const EmergencyServices: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'contacts' | 'locations'>('contacts');
   const [selectedCountry, setSelectedCountry] = useState<'malaysia' | 'indonesia'>('malaysia');
 
+  // Example emergency data for Malaysia and Indonesia
+  // Replace with your own country's data as needed
   const emergencyContacts: EmergencyContact[] = [
     // Malaysia
     {

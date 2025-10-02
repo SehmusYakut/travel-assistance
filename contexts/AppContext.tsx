@@ -2,7 +2,7 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 
-export type Language = 'tr' | 'en';
+export type Language = 'en' | 'tr' | 'ku'; // English, Turkish, Kurdish (Kurmanji)
 export type Theme = 'light' | 'dark';
 
 interface AppContextType {
@@ -23,13 +23,11 @@ const translations = {
     'button.findLocation': 'Neredeyim? 📍',
     'button.restaurants': 'Lezzetler 🍜',
     'button.transport': 'Ulaşım 🚌',
-    'button.malaysia': 'Malezya 🇲🇾',
-    'button.indonesia': 'Endonezya 🇮🇩',
+    'button.guide': 'Rehber 🗺️',
     'button.location.short': 'Konum',
     'button.restaurants.short': 'Lezzet',
     'button.transport.short': 'Ulaşım',
-    'button.malaysia.short': 'Malezya',
-    'button.indonesia.short': 'Endonezya',
+    'button.guide.short': 'Rehber',
     
     // Weather
     'weather.title': 'Hava Durumu',
@@ -130,13 +128,11 @@ const translations = {
     'button.findLocation': 'Where am I? 📍',
     'button.restaurants': 'Yummy Spots 🍜',
     'button.transport': 'Get Around 🚌',
-    'button.malaysia': 'Malaysia 🇲🇾',
-    'button.indonesia': 'Indonesia 🇮🇩',
+    'button.guide': 'Travel Guide 🗺️',
     'button.location.short': 'Location',
     'button.restaurants.short': 'Food',
     'button.transport.short': 'Transport',
-    'button.malaysia.short': 'Malaysia',
-    'button.indonesia.short': 'Indonesia',
+    'button.guide.short': 'Guide',
     
     // Weather
     'weather.title': 'Weather',
@@ -227,6 +223,111 @@ const translations = {
     'settings.theme.light': 'Light',
     'settings.theme.dark': 'Dark',
     'settings.theme.system': 'System',
+  },
+  ku: {
+    // Header
+    'app.title': 'Alîkarê Gerê',
+    'app.subtitle': 'Hevalê te yê dîjîtal ê têr bo gerê. Cihên herî baş ên nêzîkî xwe bibîne û agahdariya girîng bistîne.',
+    
+    // Buttons
+    'button.findLocation': 'Ez li ku derê me? 📍',
+    'button.restaurants': 'Xwaringehên Xweş 🍜',
+    'button.transport': 'Rêwîtî 🚌',
+    'button.guide': 'Rêber 🗺️',
+    'button.location.short': 'Cih',
+    'button.restaurants.short': 'Xwarin',
+    'button.transport.short': 'Rêwîtî',
+    'button.guide.short': 'Rêber',
+    
+    // Weather
+    'weather.title': 'Rewşa Hewayê',
+    'weather.subtitle': 'Agahdariya rewşa hewayê ya rastîn',
+    'weather.loading': 'Rewşa hewayê tê... ☀️',
+    'weather.error': 'Rewşa hewayê reviya! 🌥️',
+    'weather.currentLocation': 'Cihê Min ê Niha',
+    'weather.humidity': 'Nemî',
+    'weather.wind': 'Ba',
+    'weather.pressure': 'Zext',
+    'weather.visibility': 'Dîtin',
+    'weather.feelsLike': 'Hîs dike',
+    'weather.forecast.title': 'Pêşbîniya 5 Rojan',
+    'weather.forecast.button': 'Pêşbîniya 5 Rojan',
+    'weather.tips': 'Şîreta Gerê',
+    'weather.tip.hot': 'Hewa germ e! Pir av vexwe û cilên sivik li xwe bike.',
+    'weather.tip.humid': 'Nemî zêde ye. Çalakiyên hundir bi hizir bike.',
+    'weather.tip.windy': 'Hewa bayî ye. Li çalakiyên deryayê bala xwe bide.',
+    'weather.tip.ideal': 'Mercên rewşa hewayê yên ideal in bo gerê! 🌟',
+    'weather.empty.title': 'Rewşa Hewayê Bibîne',
+    'weather.empty.subtitle': 'Bajarekê hilbijêre an jî cihê xwe yê niha bi kar bîne',
+    
+    // Route Planner
+    'route.title': 'Plansazê Rêyê',
+    'route.destination': 'Navnîşana Cihê Destpêkê:',
+    'route.placeholder': 'mînak: KLCC Kuala Lumpur',
+    'route.calculate': 'Rêyê Hesab bike',
+    'route.calculating': 'Tê hesab kirin...',
+    'route.quickDestinations': 'Cihên Bilez:',
+    'route.hotel': 'Anggun Residences KLCC (Otelê Min)',
+    'route.info': 'Agahdariya Rêyê',
+    'route.distance': 'Dûrahî',
+    'route.duration': 'Dem',
+    'route.steps': 'Gavên Yekem',
+    'route.clear': 'Pak bike',
+    'route.error.noLocation': 'Pêwîstî bi xalên destpêk û dawî heye! 🗺️',
+    'route.error.calculation': 'Rê nehate dîtin, rêyek din biceribîne? 🛤️',
+    'route.needLocation': 'Divê yekem cihê xwe bibînî, paşê em nexşeyê çêkin! 📍',
+    'route.travelMode.driving': 'Bi Erebeyê',
+    'route.travelMode.walking': 'Bi Pêya',
+    'route.travelMode.transit': 'Veguherîn',
+    'route.travelMode.bicycling': 'Bi Duracanê',
+    
+    // Guide Tabs
+    'guide.attractions': 'Cihên Balkêş',
+    'guide.attractions.short': 'Cih',
+    'guide.transportation': 'Rêwîtî',
+    'guide.food': 'Xwarin',
+    'guide.tips': 'Şîret',
+    'guide.safety': 'Ewlehî',
+    'guide.links': 'Lînkên Bikêr',
+    'guide.links.short': 'Lînk',
+    'guide.visitTime': 'Dema Serdanê',
+    'guide.entryFee': 'Bihayê Ketinê',
+    'guide.bestTime': 'Dema Herî Baş',
+    'guide.tip': 'Şîret',
+    'guide.showOnMap': 'Li ser Nexşeyê Nîşan Bide',
+    'guide.where': 'Li ku derê',
+    'guide.price': 'Biha',
+    
+    // Common
+    'common.loading': 'Hêdî hêdî... 😊',
+    'common.error': 'Wey! Tiştek şaş çû 😅',
+    'common.retry': 'Dîsa Biceribîne',
+    'common.close': 'Bigire',
+    'common.save': 'Tomar bike',
+    'common.cancel': 'Betal bike',
+    'common.welcome': 'Bi xêr hatî Rêberê Gerê!',
+    'common.welcomeText': 'Cihên xweş ên xwarinê û vebijarkên rêwîtiyê bibîne! 🍜🚌',
+    'common.footer': 'Bi daneyên rastîn gerên ewletir ✈️',
+    'common.footerWish': 'Gerên baş! 🧳✨',
+    
+    // Map
+    'map.title': 'Nexşe',
+    
+    // Welcome Section
+    'welcome.title': 'Bi xêr hatî Rêberê Gerê!',
+    'welcome.description': 'Cihên xweş ên xwarinê û vebijarkên rêwîtiyê bibîne! 🍜🚌',
+    
+    // Footer
+    'footer.description': 'Bi daneyên rastîn gerên ewletir ✈️',
+    'footer.wishes': 'Gerên sax! 🧳✈️',
+    
+    // Settings
+    'settings.title': 'Mîheng',
+    'settings.language': 'Ziman',
+    'settings.theme': 'Têm',
+    'settings.theme.light': 'Ronî',
+    'settings.theme.dark': 'Tarî',
+    'settings.theme.system': 'Pergal',
   }
 };
 
@@ -245,7 +346,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('tr');
+  const [language, setLanguageState] = useState<Language>('en'); // Default to English
   const [theme, setThemeState] = useState<Theme>('light');
 
   // Load saved preferences
@@ -253,7 +354,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     const savedLang = localStorage.getItem('travel-guide-language') as Language;
     const savedTheme = localStorage.getItem('travel-guide-theme') as Theme;
     
-    if (savedLang && (savedLang === 'tr' || savedLang === 'en')) {
+    if (savedLang && (savedLang === 'en' || savedLang === 'tr' || savedLang === 'ku')) {
       setLanguageState(savedLang);
     }
     

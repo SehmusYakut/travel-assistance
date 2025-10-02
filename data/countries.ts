@@ -1,5 +1,8 @@
 import { GuideData } from '../models/types';
 
+// Example country data - Malaysia
+// You can use this as a template to add your own country data
+/* 
 export const malaysiaData = {
   attractions: [
     { 
@@ -249,6 +252,9 @@ export const malaysiaData = {
   ]
 };
 
+// Example country data - Indonesia  
+// You can use this as a template to add your own country data
+/*
 export const indonesiaData = {
   attractions: [
     { 
@@ -393,8 +399,11 @@ export const indonesiaData = {
     { name: "Grab Uygulaması", url: "https://www.grab.com/id/" }
   ]
 };
+*/
 
+// Example usage: Replace these with your own country data
+// You can uncomment and modify the example data above
 export const guideData: GuideData = {
-  malaysia: malaysiaData,
-  indonesia: indonesiaData
+  // malaysia: malaysiaData,
+  // indonesia: indonesiaData
 };

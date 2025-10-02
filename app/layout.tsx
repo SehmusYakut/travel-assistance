@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Travel Assistant - Gezgin Rehberi',
-  description: 'Your personal travel assistant for exploring new destinations',
+  title: 'Travel Assistance - Your Personal Travel Helper',
+  description: 'Your personal travel assistance app for exploring new destinations safely and efficiently',
 }
 
 export default function RootLayout({
