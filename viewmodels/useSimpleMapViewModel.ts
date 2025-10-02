@@ -24,7 +24,7 @@ interface AppState {
 
 export const useSimpleMapViewModel = () => {
   const [mapState, setMapState] = useState<MapState>({
-    center: { lat: 4.2105, lng: 101.9758 }, // Malaysia center
+    center: { lat: 39.9334, lng: 32.8597 }, // Ankara, Turkey center
     zoom: 6,
     userLocation: null,
     places: [],

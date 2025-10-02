@@ -45,22 +45,8 @@ export const BottomNavigation = ({
       id: 'tools',
       icon: '🛠️',
       activeIcon: '🛠️',
-      label: 'Araçlar',
+      label: 'Tools',
       action: 'tools'
-    },
-    {
-      id: 'malaysia',
-      icon: '🇲🇾',
-      activeIcon: '🇲🇾',
-      label: t('button.malaysia.short'),
-      action: 'malaysia'
-    },
-    {
-      id: 'indonesia',
-      icon: '🇮🇩',
-      activeIcon: '🇮🇩',
-      label: t('button.indonesia.short'),
-      action: 'indonesia'
     }
   ];
 

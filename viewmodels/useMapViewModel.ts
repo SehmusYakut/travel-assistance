@@ -7,8 +7,8 @@ import { guideData } from '../data/countries';
 export const useMapViewModel = () => {
   // Map State
   const [mapState, setMapState] = useState<MapState>({
-    center: { lat: 3.1390, lng: 101.6869 }, // Kuala Lumpur default
-    zoom: 12,
+    center: { lat: 39.9334, lng: 32.8597 }, // Ankara, Turkey default
+    zoom: 6,
     places: [],
     markers: [],
     isLoaded: false,

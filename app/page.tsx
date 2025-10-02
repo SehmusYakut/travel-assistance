@@ -174,6 +174,27 @@ export default function Home() {
               <span className="hidden sm:inline">Türk Restoranları</span>
               <span className="sm:hidden text-xs font-medium">Türk</span>
             </ActionButton>
+
+            {/* Tools Buttons - Desktop */}
+            <div className="hidden md:contents">
+              <ActionButton
+                onClick={() => setIsCurrencyOpen(true)}
+                variant="secondary"
+                disabled={appState.status === 'loading'}
+              >
+                <span className="text-lg sm:text-xl">💰</span>
+                <span>Currency Converter</span>
+              </ActionButton>
+
+              <ActionButton
+                onClick={() => setIsTranslatorOpen(true)}
+                variant="primary"
+                disabled={appState.status === 'loading'}
+              >
+                <span className="text-lg sm:text-xl">🗣️</span>
+                <span>Translator</span>
+              </ActionButton>
+            </div>
           </div>
 
           {/* Content Sections */}

@@ -114,45 +114,6 @@ export const RouteComponent: React.FC<RouteComponentProps> = ({
     setIsExpanded(false);
   }, [directionsRenderer]);
 
-  const quickDestinations = [
-    { 
-      key: 'hotel',
-      icon: '🏨',
-      name: t('route.hotel'),
-      address: '8, Jalan Medan Tuanku, Chow Kit, 50250 Kuala Lumpur, Malaysia'
-    },
-    { 
-      key: 'klcc',
-      icon: '🏢',
-      name: 'KLCC',
-      address: 'KLCC Kuala Lumpur'
-    },
-    { 
-      key: 'petronas',
-      icon: '🏗️',
-      name: 'Petronas Towers',
-      address: 'Petronas Twin Towers'
-    },
-    { 
-      key: 'batu',
-      icon: '🏔️',
-      name: 'Batu Caves',
-      address: 'Batu Caves'
-    },
-    { 
-      key: 'central',
-      icon: '🏪',
-      name: 'Central Market',
-      address: 'Central Market KL'
-    },
-    { 
-      key: 'bukit',
-      icon: '🛍️',
-      name: 'Bukit Bintang',
-      address: 'Bukit Bintang'
-    }
-  ];
-
   const travelModes = [
     { key: 'DRIVING' as TravelMode, icon: '🚗', name: t('route.travelMode.driving') },
     { key: 'WALKING' as TravelMode, icon: '🚶', name: t('route.travelMode.walking') },
@@ -253,29 +214,6 @@ export const RouteComponent: React.FC<RouteComponentProps> = ({
                 </>
               )}
             </button>
-          </div>
-        </div>
-
-        {/* Quick Destinations */}
-        <div className="mb-6">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('route.quickDestinations')}</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-            {quickDestinations.map((dest) => (
-              <button
-                key={dest.key}
-                onClick={() => setDestination(dest.address)}
-                className={`flex items-center p-3 rounded-xl border border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/10 transition-all touch-manipulation ${
-                  dest.key === 'hotel' 
-                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700 text-green-700 dark:text-green-300'
-                    : 'text-gray-700 dark:text-gray-300'
-                }`}
-              >
-                <span className="text-lg mr-2 flex-shrink-0">{dest.icon}</span>
-                <span className="text-xs sm:text-sm font-medium text-left leading-tight">
-                  {dest.name}
-                </span>
-              </button>
-            ))}
           </div>
         </div>
 
