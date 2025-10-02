@@ -98,7 +98,7 @@ export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> =
                       : 'border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  <span className="text-lg mb-1">🟥🟩🟨</span>
+                  <span className="text-lg mb-1">�️</span>
                   <span className="font-medium text-sm">Kurdî</span>
                 </button>
               </div>

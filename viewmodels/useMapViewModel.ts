@@ -12,6 +12,8 @@ export const useMapViewModel = () => {
     places: [],
     markers: [],
     isLoaded: false,
+    map: null,
+    userLocation: null,
   });
 
   // App State
