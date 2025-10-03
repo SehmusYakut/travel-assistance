@@ -1,0 +1,105 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run weekly security scan
+    - cron: '0 2 * * 1'
+
+jobs:
+  secrets-scan:
+    name: Secrets Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Scan full history
+          
+      - name: GitGuardian Secrets Scan
+        uses: GitGuardian/ggshield/actions/secret@v1.31.0
+        env:
+          GITHUB_PUSH_BEFORE_SHA: ${{ github.event.before }}
+          GITHUB_PUSH_BASE_SHA: ${{ github.event.base }}
+          GITHUB_PULL_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          GITHUB_DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API_KEY }}
+
+  dependency-check:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        
+      - name: Check for known vulnerabilities
+        run: npx audit-ci --moderate
+
+  environment-check:
+    name: Environment Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        
+      - name: Check for sensitive files
+        run: |
+          # Check that no .env files are committed
+          if find . -name ".env*" -not -name ".env.example" -not -path "./.git/*" | grep -q .; then
+            echo "❌ ERROR: .env files found in repository!"
+            find . -name ".env*" -not -name ".env.example" -not -path "./.git/*"
+            exit 1
+          else
+            echo "✅ No .env files found in repository"
+          fi
+          
+      - name: Check .gitignore coverage
+        run: |
+          # Verify important patterns are in .gitignore
+          required_patterns=(".env*" "*.key" "*.pem" ".secret" ".credentials")
+          
+          for pattern in "${required_patterns[@]}"; do
+            if ! grep -q "$pattern" .gitignore; then
+              echo "❌ WARNING: Pattern '$pattern' not found in .gitignore"
+              exit 1
+            else
+              echo "✅ Pattern '$pattern' found in .gitignore"
+            fi
+          done
+          
+      - name: Check for hardcoded secrets patterns
+        run: |
+          # Basic regex patterns for common secrets
+          echo "🔍 Scanning for potential hardcoded secrets..."
+          
+          # Check for API key patterns (basic check)
+          if grep -r -i "api[_-]key\s*[:=]\s*['\"][^'\"]*['\"]" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" .; then
+            echo "❌ Potential hardcoded API keys found!"
+            exit 1
+          fi
+          
+          # Check for common secret patterns
+          if grep -r -E "(password|secret|token|key)\s*[:=]\s*['\"][^'\"]{8,}" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" .; then
+            echo "❌ Potential hardcoded secrets found!"
+            exit 1
+          fi
+          
+          echo "✅ No obvious hardcoded secrets detected"

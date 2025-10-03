@@ -30,8 +30,24 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# Environment variables and sensitive files
 .env*
+!.env.example
+
+# API keys and credentials
+*.key
+*.pem
+.secret
+.credentials
+
+# API rotation logs and backups
+.api-rotation-log.json
+.env.local.backup.*
+
+# Backup files
+*.backup
+*.bak
+*.tmp
 
 # vercel
 .vercel

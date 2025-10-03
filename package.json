@@ -6,7 +6,11 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:check": "npm run security:audit && npm run security:env",
+    "security:env": "node scripts/check-env.js",
+    "security:fix": "npm audit fix"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",

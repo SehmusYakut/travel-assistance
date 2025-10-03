@@ -218,10 +218,10 @@ echo "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_actual_api_key_here" > .env.local
 **Your `.env.local` should look like:**
 
 ```env
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyC_your_actual_api_key_here
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_actual_google_maps_api_key_here
 ```
 
-> ⚠️ **Security Note:** Never commit `.env.local` to Git! It's already in `.gitignore`
+> ⚠️ **Security Note:** Environment files are automatically excluded from version control
 
 ### Step 5: Run the Application 🎉
 
@@ -336,7 +336,7 @@ Netlify automatically deploys on every push to GitHub:
 - **Deploy previews:** Automatic preview for each pull request
 - **Branch deploys:** Deploy for other branches (can be enabled in settings)
 
-**Security Warning:** Never share your API key in a public repository!
+> 🔐 **Security Note:** Ensure your API keys are properly configured in Netlify's environment variables
 
 ## Google Maps API Pricing
 
@@ -638,6 +638,48 @@ Special thanks to:
 ![GitHub stars](https://img.shields.io/github/stars/SehmusYakut/travel-assistance?style=social)
 ![GitHub forks](https://img.shields.io/github/forks/SehmusYakut/travel-assistance?style=social)
 ![GitHub watchers](https://img.shields.io/github/watchers/SehmusYakut/travel-assistance?style=social)
+
+---
+
+## 🔒 Security & Configuration
+
+### Environment Variables
+This project implements enterprise-grade API security practices:
+
+- **Secure Storage**: API keys stored in `.env.local` (excluded from version control)
+- **Template System**: Use `.env.example` as reference for required variables
+- **Automated Protection**: Environment files automatically ignored by Git
+- **Rotation Support**: Built-in tools for safe API key rotation
+
+### Required API Keys
+- **Google Maps API**: Enable Maps JavaScript API, Places API, and Geocoding API
+  - Configure at: [Google Cloud Console](https://console.cloud.google.com/google/maps-apis)
+  - **Security**: Apply domain restrictions and minimal permissions
+
+### Security Features
+- **Automated Scanning**: GitHub Actions workflow for secrets detection
+- **Environment Validation**: Built-in scripts to check API key security
+- **Key Rotation**: Automated helper for safe API key updates
+- **Monitoring Ready**: Support for usage monitoring and alerts
+
+### External Services (No Authentication Required)
+- **Weather**: Open-Meteo API
+- **Translation**: MyMemory API  
+- **Currency**: ExchangeRate-API
+
+### Security Commands
+```bash
+# Check API key security status
+npm run security:check
+
+# Audit dependencies for vulnerabilities  
+npm run security:audit
+
+# Rotate API key safely
+node scripts/rotate-api-key.js
+```
+
+> 📋 **Security Guide**: See `SECURITY.md` for comprehensive security configuration
 
 ---
 
