@@ -231,7 +231,7 @@ export const GuideContent: React.FC<GuideContentProps> = ({ guideContent, countr
       {onClose && (
         <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-600">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <span>�</span>
+            <span>🗺️</span>
             {countryKey ? `${countryKey.charAt(0).toUpperCase() + countryKey.slice(1)} Rehberi` : 'Ülke Rehberi'}
           </h2>
           <button

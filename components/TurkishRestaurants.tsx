@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Place, Location, TurkishRestaurantCategory } from '../models/types';
+import { useState, useEffect, useCallback } from 'react';
+import { Place, Location } from '../models/types';
 import { TurkishRestaurantService } from '../services/turkishRestaurantService';
 
 interface TurkishRestaurantsProps {
@@ -25,7 +25,7 @@ const TurkishRestaurants: React.FC<TurkishRestaurantsProps> = ({
   const turkishService = TurkishRestaurantService.getInstance();
 
   // Türk restoranlarını ara
-  const searchTurkishRestaurants = async () => {
+  const searchTurkishRestaurants = useCallback(async () => {
     if (!map || !userLocation) {
       setError('Harita veya konum bilgisi mevcut değil');
       return;
@@ -44,20 +44,20 @@ const TurkishRestaurants: React.FC<TurkishRestaurantsProps> = ({
       if (result.totalFound === 0) {
         setError('Bu bölgede Türk restoranı bulunamadı. Daha geniş bir alanda aramayı deneyin.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Türk restoranları aranırken bir hata oluştu');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Türk restoranları aranırken bir hata oluştu');
       console.error('Türk restoranı arama hatası:', err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [map, userLocation, turkishService]);
 
   // Component yüklendiğinde otomatik arama
   useEffect(() => {
     if (map && userLocation) {
       searchTurkishRestaurants();
     }
-  }, [map, userLocation]);
+  }, [map, userLocation, searchTurkishRestaurants]);
 
   // Filtrelenmiş restoranları getir
   const getFilteredRestaurants = () => {

@@ -379,7 +379,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations['tr']] || key;
+    return (translations[language] as Record<string, string>)[key] || key;
   };
 
   const value: AppContextType = {

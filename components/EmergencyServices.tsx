@@ -203,16 +203,14 @@ export const EmergencyServices: React.FC = () => {
     }
   };
 
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'police': return 'blue';
-      case 'medical': return 'red';
-      case 'fire': return 'orange';
-      case 'tourist': return 'green';
-      case 'consulate': return 'purple';
-      case 'hospital': return 'red';
-      default: return 'gray';
-    }
+  const typeColorClasses: Record<string, string> = {
+    police: 'bg-blue-500 hover:bg-blue-600',
+    medical: 'bg-red-500 hover:bg-red-600',
+    fire: 'bg-orange-500 hover:bg-orange-600',
+    tourist: 'bg-green-500 hover:bg-green-600',
+    consulate: 'bg-purple-500 hover:bg-purple-600',
+    hospital: 'bg-red-500 hover:bg-red-600',
+    default: 'bg-gray-500 hover:bg-gray-600',
   };
 
   const handleCall = (number: string) => {
@@ -327,7 +325,7 @@ export const EmergencyServices: React.FC = () => {
                   </div>
                   <button
                     onClick={() => handleCall(contact.number)}
-                    className={`ml-3 px-4 py-2 bg-${getTypeColor(contact.type)}-500 hover:bg-${getTypeColor(contact.type)}-600 text-white rounded-lg text-sm font-medium transition-colors flex-shrink-0`}
+                    className={`ml-3 px-4 py-2 ${typeColorClasses[contact.type] ?? typeColorClasses.default} text-white rounded-lg text-sm font-medium transition-colors flex-shrink-0`}
                   >
                     📞 {language === 'tr' ? 'Ara' : 'Call'}
                   </button>

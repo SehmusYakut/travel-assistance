@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import TranslationService from '../services/translationService';
 
@@ -25,7 +25,7 @@ export const Translator = ({ isOpen, onClose }: TranslatorProps = {}) => {
   const languages = translationService.getSupportedLanguages();
 
   // Çeviri yap
-  const translateText = async () => {
+  const translateText = useCallback(async () => {
     if (!sourceText.trim()) return;
     
     setLoading(true);
@@ -39,7 +39,7 @@ export const Translator = ({ isOpen, onClose }: TranslatorProps = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sourceText, targetLang, sourceLang, translationService]);
 
   // Dilleri değiştir
   const swapLanguages = () => {
@@ -79,7 +79,7 @@ export const Translator = ({ isOpen, onClose }: TranslatorProps = {}) => {
   };
 
   // Sık kullanılan ifadeleri çevir
-  const translateCommonPhrases = async () => {
+  const translateCommonPhrases = useCallback(async () => {
     setLoading(true);
     try {
       const phrases = translationService.getCommonPhrases(selectedCategory);
@@ -90,7 +90,7 @@ export const Translator = ({ isOpen, onClose }: TranslatorProps = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, targetLang, translationService]);
 
   // Auto translate when text changes
   useEffect(() => {
@@ -101,14 +101,14 @@ export const Translator = ({ isOpen, onClose }: TranslatorProps = {}) => {
     }, 500);
     
     return () => clearTimeout(timeout);
-  }, [sourceText, sourceLang, targetLang]);
+  }, [sourceText, sourceLang, targetLang, translateText]);
 
   // Load common phrases on category change
   useEffect(() => {
     if (isOpen) {
       translateCommonPhrases();
     }
-  }, [selectedCategory, targetLang, isOpen]);
+  }, [selectedCategory, targetLang, isOpen, translateCommonPhrases]);
 
   if (!isOpen) return null;
 
