@@ -232,7 +232,7 @@ export class APIOptimizationService {
     requestFn: () => Promise<T>,
     input: string
   ): Promise<T> {
-    // Çok kısa inputları ignore et
+    // Çok kısa inputları ignore et (T is expected to be an array type)
     if (input.length < 3) {
       return [] as unknown as T;
     }
