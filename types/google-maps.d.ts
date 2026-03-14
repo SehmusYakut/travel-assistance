@@ -71,8 +71,12 @@ declare global {
       }
 
       namespace event {
-        function addListener(instance: any, eventName: string, handler: () => void): any;
-        function removeListener(listener: any): void;
+        function addListener(instance: object, eventName: string, handler: () => void): google.maps.MapsEventListener;
+        function removeListener(listener: google.maps.MapsEventListener): void;
+      }
+
+      interface MapsEventListener {
+        remove(): void;
       }
 
       class InfoWindow {
@@ -92,7 +96,7 @@ declare global {
       interface MapTypeStyle {
         featureType?: string;
         elementType?: string;
-        stylers?: Array<{[key: string]: any}>;
+        stylers?: Array<{[key: string]: string | number}>;
       }
 
       class Marker {
@@ -105,7 +109,24 @@ declare global {
         position?: LatLng | LatLngLiteral;
         map?: Map;
         title?: string;
-        icon?: string | Icon | Symbol;
+        icon?: string | Icon | MapSymbol;
+      }
+
+      interface MapSymbol {
+        path: string | google.maps.SymbolPath;
+        fillColor?: string;
+        fillOpacity?: number;
+        scale?: number;
+        strokeColor?: string;
+        strokeWeight?: number;
+      }
+
+      enum SymbolPath {
+        CIRCLE = 0,
+        FORWARD_CLOSED_ARROW = 1,
+        FORWARD_OPEN_ARROW = 2,
+        BACKWARD_CLOSED_ARROW = 3,
+        BACKWARD_OPEN_ARROW = 4
       }
 
       interface Icon {

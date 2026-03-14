@@ -340,26 +340,23 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('en'); // Default to English
-  const [theme, setThemeState] = useState<Theme>('light');
-
-  // Load saved preferences
-  useEffect(() => {
-    const savedLang = localStorage.getItem('travel-guide-language') as Language;
-    const savedTheme = localStorage.getItem('travel-guide-theme') as Theme;
-    
+  const [language, setLanguageState] = useState<Language>(() => {
+    if (typeof window === 'undefined') return 'en';
+    const savedLang = localStorage.getItem('travel-guide-language');
     if (savedLang && (savedLang === 'en' || savedLang === 'tr' || savedLang === 'ku')) {
-      setLanguageState(savedLang);
+      return savedLang;
     }
-    
+    return 'en';
+  });
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window === 'undefined') return 'light';
+    const savedTheme = localStorage.getItem('travel-guide-theme');
     if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-      setThemeState(savedTheme);
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setThemeState(prefersDark ? 'dark' : 'light');
+      return savedTheme;
     }
-  }, []);
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
+  });
 
   // Apply theme to document
   useEffect(() => {

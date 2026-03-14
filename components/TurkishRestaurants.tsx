@@ -44,8 +44,9 @@ const TurkishRestaurants: React.FC<TurkishRestaurantsProps> = ({
       if (result.totalFound === 0) {
         setError('Bu bölgede Türk restoranı bulunamadı. Daha geniş bir alanda aramayı deneyin.');
       }
-    } catch (err: any) {
-      setError(err.message || 'Türk restoranları aranırken bir hata oluştu');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Türk restoranları aranırken bir hata oluştu';
+      setError(errorMessage);
       console.error('Türk restoranı arama hatası:', err);
     } finally {
       setIsLoading(false);

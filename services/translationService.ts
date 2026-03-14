@@ -209,19 +209,36 @@ class TranslationService {
         return;
       }
 
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
-      const recognition = new SpeechRecognition();
+      interface SpeechRecognitionInstance {
+        lang: string;
+        continuous: boolean;
+        interimResults: boolean;
+        onresult: ((event: { results: SpeechRecognitionResultList }) => void) | null;
+        onerror: ((event: { error: string }) => void) | null;
+        start(): void;
+      }
+
+      const win = window as unknown as Window & {
+        webkitSpeechRecognition?: new () => SpeechRecognitionInstance;
+        SpeechRecognition?: new () => SpeechRecognitionInstance;
+      };
+      const SpeechRecognitionCtor = win.webkitSpeechRecognition || win.SpeechRecognition;
+      if (!SpeechRecognitionCtor) {
+        reject(new Error('Ses tanıma desteklenmiyor'));
+        return;
+      }
+      const recognition = new SpeechRecognitionCtor();
       
       recognition.lang = language;
       recognition.continuous = false;
       recognition.interimResults = false;
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: { results: SpeechRecognitionResultList }) => {
         const transcript = event.results[0][0].transcript;
         resolve(transcript);
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event: { error: string }) => {
         reject(new Error('Ses tanıma hatası: ' + event.error));
       };
 

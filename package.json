@@ -15,12 +15,12 @@
   "dependencies": {
     "@react-google-maps/api": "^2.20.7",
     "@tailwindcss/line-clamp": "^0.4.4",
+    "geist": "^1.7.0",
     "next": "16.1.6",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
