@@ -153,7 +153,6 @@ export const SettingsModal: React.FC<{ isOpen: boolean; onClose: () => void }> =
 
 export const SettingsButton: React.FC = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const { theme } = useAppContext();
 
   return (
     <>

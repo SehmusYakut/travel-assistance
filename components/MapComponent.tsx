@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useEffect, useRef, useMemo } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { Location, Place } from '../models/types';
 import { APIOptimizationService } from '../services/apiOptimizationService';
 
@@ -134,7 +134,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       apiOptimization.current
         .optimizedAutocomplete(
           () =>
-            new Promise<google.maps.places.AutocompletePrediction[]>((resolve, reject) => {
+            new Promise<google.maps.places.AutocompletePrediction[]>((resolve) => {
               autocompleteService.current!.getPlacePredictions(
                 {
                   input: debouncedSearchQuery,
@@ -229,14 +229,11 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     places.forEach((place, index) => {
       // Choose icon based on place type
       let iconUrl = 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/generic_business-71.png';
-      let iconColor = '#FF6B6B';
       
       if (place.types?.includes('restaurant') || place.types?.includes('food')) {
         iconUrl = 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/restaurant-71.png';
-        iconColor = '#FF6B6B';
       } else if (place.types?.includes('transit_station')) {
         iconUrl = 'https://maps.gstatic.com/mapfiles/place_api/icons/v1/png_71/transit_station-71.png';
-        iconColor = '#4ECDC4';
       }
 
       const marker = new google.maps.Marker({

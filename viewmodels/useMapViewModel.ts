@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Location, Place, PlaceType, AppState, MapState, CountryData } from '../models/types';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { PlaceType, AppState, MapState } from '../models/types';
 import { LocationService, GoogleMapsService } from '../services/mapService';
 import { guideData } from '../data/countries';
 
@@ -28,6 +28,7 @@ export const useMapViewModel = () => {
   // Google Maps instance
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const googleMapsService = GoogleMapsService.getInstance();
+  const markersRef = useRef<google.maps.Marker[]>([]);
 
   // Initialize Google Maps with better error handling
   const initializeMap = useCallback(async (mapElement: HTMLElement) => {
@@ -86,7 +87,7 @@ export const useMapViewModel = () => {
         errorMessage: error instanceof Error ? error.message : 'Harita yüklenemedi',
       }));
     }
-  }, [mapState.center, mapState.zoom, map, mapState.isLoaded]);
+  }, [mapState.center, mapState.zoom, map, mapState.isLoaded, googleMapsService]);
 
   // Find user's current location
   const findCurrentLocation = useCallback(async () => {
@@ -192,11 +193,12 @@ export const useMapViewModel = () => {
     setMapState(prev => ({ ...prev, places: [] }));
     
     // Clear markers
-    if (mapState.markers && mapState.markers.length > 0) {
-      googleMapsService.clearMarkers(mapState.markers);
+    if (markersRef.current.length > 0) {
+      googleMapsService.clearMarkers(markersRef.current);
+      markersRef.current = [];
       setMapState(prev => ({ ...prev, markers: [] }));
     }
-  }, [mapState.markers]);
+  }, [googleMapsService]);
 
   // Update markers when places change - optimize with better cleanup
   useEffect(() => {
@@ -208,8 +210,9 @@ export const useMapViewModel = () => {
     const updateMarkers = async () => {
       try {
         // Clear existing markers safely
-        if (mapState.markers && mapState.markers.length > 0) {
-          googleMapsService.clearMarkers(mapState.markers);
+        if (markersRef.current.length > 0) {
+          googleMapsService.clearMarkers(markersRef.current);
+          markersRef.current = [];
         }
 
         if (isCancelled) return;
@@ -278,6 +281,7 @@ export const useMapViewModel = () => {
         }
 
         if (!isCancelled) {
+          markersRef.current = newMarkers;
           setMapState(prev => ({ ...prev, markers: newMarkers }));
         }
       } catch (error) {
@@ -291,7 +295,7 @@ export const useMapViewModel = () => {
     return () => {
       isCancelled = true;
     };
-  }, [map, mapState.places, mapState.center, mapState.isLoaded]);
+  }, [map, mapState.places, mapState.center, mapState.isLoaded, googleMapsService]);
 
   // Update map when center or zoom changes
   useEffect(() => {
@@ -308,11 +312,12 @@ export const useMapViewModel = () => {
   // Cleanup markers when component unmounts
   useEffect(() => {
     return () => {
-      if (mapState.markers && mapState.markers.length > 0) {
-        googleMapsService.clearMarkers(mapState.markers);
+      if (markersRef.current.length > 0) {
+        googleMapsService.clearMarkers(markersRef.current);
+        markersRef.current = [];
       }
     };
-  }, []); // Empty dependency array - sadece unmount'ta çalışsın
+  }, [googleMapsService]);
 
   return {
     mapState,

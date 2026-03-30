@@ -5,7 +5,7 @@ interface CacheItem<T> {
 }
 
 interface RequestQueue {
-  promise: Promise<any>;
+  promise: Promise<unknown>;
   timestamp: number;
 }
 
@@ -14,7 +14,7 @@ interface RequestQueue {
  */
 export class APIOptimizationService {
   private static instance: APIOptimizationService;
-  private cache = new Map<string, CacheItem<any>>();
+  private cache = new Map<string, CacheItem<unknown>>();
   private requestQueue = new Map<string, RequestQueue>();
   private requestCounts = new Map<string, number[]>(); // Dakikalık request sayısı
   
@@ -44,7 +44,7 @@ export class APIOptimizationService {
   /**
    * Cache key oluşturur
    */
-  private createCacheKey(type: string, params: any): string {
+  private createCacheKey(type: string, params: Record<string, unknown>): string {
     return `${type}:${JSON.stringify(params)}`;
   }
 
@@ -188,12 +188,12 @@ export class APIOptimizationService {
   /**
    * Optimize edilmiş Places API çağrısı
    */
-  async optimizedPlacesSearch(
-    requestFn: () => Promise<any>,
+  async optimizedPlacesSearch<T>(
+    requestFn: () => Promise<T>,
     location: { lat: number; lng: number },
     type: string,
     radius: number = 1000
-  ): Promise<any> {
+  ): Promise<T> {
     // Cache key oluştur
     const cacheKey = this.createCacheKey('places', { location, type, radius });
     
@@ -228,13 +228,13 @@ export class APIOptimizationService {
   /**
    * Optimize edilmiş Autocomplete API çağrısı
    */
-  async optimizedAutocomplete(
-    requestFn: () => Promise<any>,
+  async optimizedAutocomplete<T>(
+    requestFn: () => Promise<T>,
     input: string
-  ): Promise<any> {
+  ): Promise<T> {
     // Çok kısa inputları ignore et
     if (input.length < 3) {
-      return [];
+      return [] as unknown as T;
     }
 
     const cacheKey = this.createCacheKey('autocomplete', { input });

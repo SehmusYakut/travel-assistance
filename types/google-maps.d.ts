@@ -71,8 +71,8 @@ declare global {
       }
 
       namespace event {
-        function addListener(instance: any, eventName: string, handler: () => void): any;
-        function removeListener(listener: any): void;
+        function addListener(instance: unknown, eventName: string, handler: () => void): unknown;
+        function removeListener(listener: unknown): void;
       }
 
       class InfoWindow {
@@ -92,7 +92,7 @@ declare global {
       interface MapTypeStyle {
         featureType?: string;
         elementType?: string;
-        stylers?: Array<{[key: string]: any}>;
+        stylers?: Array<Record<string, string | number | boolean>>;
       }
 
       class Marker {
@@ -105,7 +105,7 @@ declare global {
         position?: LatLng | LatLngLiteral;
         map?: Map;
         title?: string;
-        icon?: string | Icon | Symbol;
+        icon?: string | Icon | symbol;
       }
 
       interface Icon {

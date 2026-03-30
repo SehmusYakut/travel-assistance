@@ -11,6 +11,38 @@ interface Language {
   flag: string;
 }
 
+interface SpeechRecognitionAlternativeLike {
+  transcript: string;
+}
+
+interface SpeechRecognitionResultLike {
+  [index: number]: SpeechRecognitionAlternativeLike;
+}
+
+interface SpeechRecognitionEventLike {
+  results: ArrayLike<SpeechRecognitionResultLike>;
+}
+
+interface SpeechRecognitionErrorEventLike {
+  error: string;
+}
+
+interface SpeechRecognitionLike {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
+  start: () => void;
+}
+
+type SpeechRecognitionCtor = new () => SpeechRecognitionLike;
+
+type SpeechRecognitionWindow = Window & {
+  webkitSpeechRecognition?: SpeechRecognitionCtor;
+  SpeechRecognition?: SpeechRecognitionCtor;
+};
+
 class TranslationService {
   private static instance: TranslationService;
   private cache: Map<string, { translation: string; timestamp: number }> = new Map();
@@ -204,24 +236,26 @@ class TranslationService {
   // Voice to text (opsiyonel - browser API)
   async startVoiceRecognition(language: string = 'tr-TR'): Promise<string> {
     return new Promise((resolve, reject) => {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      const speechWindow = window as SpeechRecognitionWindow;
+      const SpeechRecognition = speechWindow.webkitSpeechRecognition || speechWindow.SpeechRecognition;
+
+      if (!SpeechRecognition) {
         reject(new Error('Ses tanıma desteklenmiyor'));
         return;
       }
 
-      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       const recognition = new SpeechRecognition();
       
       recognition.lang = language;
       recognition.continuous = false;
       recognition.interimResults = false;
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         resolve(transcript);
       };
 
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event) => {
         reject(new Error('Ses tanıma hatası: ' + event.error));
       };
 

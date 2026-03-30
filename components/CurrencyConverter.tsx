@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import CurrencyService from '../services/currencyService';
 
@@ -27,11 +27,11 @@ export const CurrencyConverter = ({ isOpen, onClose }: CurrencyConverterProps = 
   const [tipPercentage, setTipPercentage] = useState<number>(10);
   const [numberOfPeople, setNumberOfPeople] = useState<number>(1);
 
-  const currencyService = CurrencyService.getInstance();
+  const currencyService = useMemo(() => CurrencyService.getInstance(), []);
   const currencies = currencyService.getPopularCurrencies();
 
   // Para birimi dönüştürme
-  const convertCurrency = async () => {
+  const convertCurrency = useCallback(async () => {
     if (!amount || isNaN(Number(amount))) return;
     
     setLoading(true);
@@ -49,7 +49,7 @@ export const CurrencyConverter = ({ isOpen, onClose }: CurrencyConverterProps = 
     } finally {
       setLoading(false);
     }
-  };
+  }, [amount, fromCurrency, toCurrency, currencyService]);
 
   // Para birimlerini değiştir
   const swapCurrencies = () => {
@@ -71,9 +71,9 @@ export const CurrencyConverter = ({ isOpen, onClose }: CurrencyConverterProps = 
 
   useEffect(() => {
     if (amount && fromCurrency && toCurrency) {
-      convertCurrency();
+      void convertCurrency();
     }
-  }, [amount, fromCurrency, toCurrency]);
+  }, [amount, fromCurrency, toCurrency, convertCurrency]);
 
   const tipResult = calculateTip();
 

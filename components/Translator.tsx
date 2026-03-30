@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import TranslationService from '../services/translationService';
 
@@ -21,11 +21,11 @@ export const Translator = ({ isOpen, onClose }: TranslatorProps = {}) => {
   const [selectedCategory, setSelectedCategory] = useState<'greetings' | 'food' | 'transport' | 'emergency'>('greetings');
   const [commonPhrases, setCommonPhrases] = useState<Array<{ original: string; translated: string }>>([]);
 
-  const translationService = TranslationService.getInstance();
+  const translationService = useMemo(() => TranslationService.getInstance(), []);
   const languages = translationService.getSupportedLanguages();
 
   // Çeviri yap
-  const translateText = async () => {
+  const translateText = useCallback(async () => {
     if (!sourceText.trim()) return;
     
     setLoading(true);
@@ -39,7 +39,7 @@ export const Translator = ({ isOpen, onClose }: TranslatorProps = {}) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sourceText, targetLang, sourceLang, translationService]);
 
   // Dilleri değiştir
   const swapLanguages = () => {
@@ -79,36 +79,36 @@ export const Translator = ({ isOpen, onClose }: TranslatorProps = {}) => {
   };
 
   // Sık kullanılan ifadeleri çevir
-  const translateCommonPhrases = async () => {
+  const translateCommonPhrases = useCallback(async () => {
     setLoading(true);
     try {
       const phrases = translationService.getCommonPhrases(selectedCategory);
       const translated = await translationService.translatePhrases(phrases, targetLang, 'tr');
       setCommonPhrases(translated);
-    } catch (err) {
+    } catch {
       setError('İfadeler çevrilemedi');
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedCategory, targetLang, translationService]);
 
   // Auto translate when text changes
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (sourceText.trim()) {
-        translateText();
+        void translateText();
       }
     }, 500);
     
     return () => clearTimeout(timeout);
-  }, [sourceText, sourceLang, targetLang]);
+  }, [sourceText, sourceLang, targetLang, translateText]);
 
   // Load common phrases on category change
   useEffect(() => {
     if (isOpen) {
-      translateCommonPhrases();
+      void translateCommonPhrases();
     }
-  }, [selectedCategory, targetLang, isOpen]);
+  }, [selectedCategory, targetLang, isOpen, translateCommonPhrases]);
 
   if (!isOpen) return null;
 

@@ -247,14 +247,6 @@ export class GoogleMapsService {
   }
 
   /**
-   * Places API çalışmadığında kullanılacak örnek veriler - KALDIRILDI
-   */
-  private getFallbackPlaces(type: string, location: Location): Place[] {
-    // Artık fallback kullanmıyoruz, sadı gerçek API
-    return [];
-  }
-
-  /**
    * Harita üzerinde marker oluşturur
    */
   createMarker(

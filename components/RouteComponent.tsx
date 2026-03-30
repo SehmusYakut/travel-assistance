@@ -15,7 +15,7 @@ export const RouteComponent: React.FC<RouteComponentProps> = ({
   map,
   userLocation,
 }) => {
-  const { t, language } = useAppContext();
+  const { t } = useAppContext();
   const [destination, setDestination] = useState('');
   const [travelMode, setTravelMode] = useState<TravelMode>('DRIVING');
   const [isCalculating, setIsCalculating] = useState(false);

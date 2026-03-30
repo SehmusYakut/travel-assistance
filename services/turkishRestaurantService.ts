@@ -246,7 +246,7 @@ export class TurkishRestaurantService {
     query: string,
     radius: number
   ): Promise<Place[]> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const service = new google.maps.places.PlacesService(map);
       
       const request = {

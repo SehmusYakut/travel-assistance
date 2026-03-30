@@ -28,7 +28,7 @@ interface EmergencyLocation {
 }
 
 export const EmergencyServices: React.FC = () => {
-  const { language, t } = useAppContext();
+  const { language } = useAppContext();
   const [activeTab, setActiveTab] = useState<'contacts' | 'locations'>('contacts');
   const [selectedCountry, setSelectedCountry] = useState<'malaysia' | 'indonesia'>('malaysia');
 

@@ -339,27 +339,39 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
-export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>('en'); // Default to English
-  const [theme, setThemeState] = useState<Theme>('light');
+const isValidLanguage = (value: string | null): value is Language => {
+  return value === 'en' || value === 'tr' || value === 'ku';
+};
 
-  // Load saved preferences
-  useEffect(() => {
-    const savedLang = localStorage.getItem('travel-guide-language') as Language;
-    const savedTheme = localStorage.getItem('travel-guide-theme') as Theme;
-    
-    if (savedLang && (savedLang === 'en' || savedLang === 'tr' || savedLang === 'ku')) {
-      setLanguageState(savedLang);
-    }
-    
-    if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark')) {
-      setThemeState(savedTheme);
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setThemeState(prefersDark ? 'dark' : 'light');
-    }
-  }, []);
+const isValidTheme = (value: string | null): value is Theme => {
+  return value === 'light' || value === 'dark';
+};
+
+const getInitialLanguage = (): Language => {
+  if (typeof window === 'undefined') {
+    return 'en';
+  }
+
+  const savedLang = localStorage.getItem('travel-guide-language');
+  return isValidLanguage(savedLang) ? savedLang : 'en';
+};
+
+const getInitialTheme = (): Theme => {
+  if (typeof window === 'undefined') {
+    return 'light';
+  }
+
+  const savedTheme = localStorage.getItem('travel-guide-theme');
+  if (isValidTheme(savedTheme)) {
+    return savedTheme;
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
+  const [language, setLanguageState] = useState<Language>(getInitialLanguage);
+  const [theme, setThemeState] = useState<Theme>(getInitialTheme);
 
   // Apply theme to document
   useEffect(() => {
